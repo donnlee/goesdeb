@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE := 1
+
+ifeq (,$(DH_VERBOSE))
+	Q := @
+endif
+
+variants := example
+
+debian_variants := $(addprefix debian/goesd-,$(variants))
+debian_postinst_variants := $(addsuffix .postinst,$(debian_variants))
+debian_prerm_variants := $(addsuffix .prerm,$(debian_variants))
+
+install: $(debian_postinst_variants) $(debian_prerm_variants)
+
+%:
+	dh $@ --parallel
+
+debian/goesd-%.postint: debian/goesd-variant.postinst
+	$(Q)sed "s:PKG:goesd-$*:;s:VARIANT:$*:" < $? >$@
+
+debian/goesd-%.prerm: debian/goesd-variant.prerm
+	$(Q)sed "s:PKG:goesd-$*:;s:VARIANT:$*:" < $? >$@

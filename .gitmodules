@@ -1,0 +1,42 @@
+[submodule "src/github.com/platinasystems/goes"]
+	path = src/github.com/platinasystems/goes
+	url = git@github.com:platinasystems/goes
+[submodule "src/github.com/platinasystems/netlink"]
+	path = src/github.com/platinasystems/netlink
+	url = git@github.com:platinasystems/netlink
+[submodule "src/github.com/garyburd/redigo"]
+	path = src/github.com/garyburd/redigo
+	url = git@github.com:garyburd/redigo
+[submodule "src/github.com/platinasystems/liner"]
+	path = src/github.com/platinasystems/liner
+	url = git@github.com:platinasystems/liner
+[submodule "src/github.com/platinasystems/go-redis-server"]
+	path = src/github.com/platinasystems/go-redis-server
+	url = git@github.com:platinasystems/go-redis-server
+[submodule "src/github.com/platinasystems/oops"]
+	path = src/github.com/platinasystems/oops
+	url = git@github.com:platinasystems/oops
+[submodule "src/github.com/platinasystems/fdt"]
+	path = src/github.com/platinasystems/fdt
+	url = git@github.com:platinasystems/fdt
+[submodule "src/github.com/platinasystems/gpio"]
+	path = src/github.com/platinasystems/gpio
+	url = git@github.com:platinasystems/gpio
+[submodule "src/github.com/platinasystems/i2c"]
+	path = src/github.com/platinasystems/i2c
+	url = git@github.com:platinasystems/i2c
+[submodule "src/github.com/platinasystems/elib"]
+	path = src/github.com/platinasystems/elib
+	url = git@github.com:platinasystems/elib
+[submodule "src/github.com/platinasystems/vnet"]
+	path = src/github.com/platinasystems/vnet
+	url = git@github.com:platinasystems/vnet
+[submodule "src/github.com/kr/pty"]
+	path = src/github.com/kr/pty
+	url = git@github.com:kr/pty
+[submodule "src/github.com/tatsushid/go-fastping"]
+	path = src/github.com/tatsushid/go-fastping
+	url = git@github.com:tatsushid/go-fastping
+[submodule "src/golang.org/x/net"]
+	path = src/golang.org/x/net
+	url = https://go.googlesource.com/net

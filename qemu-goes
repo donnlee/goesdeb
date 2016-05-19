@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# Copyright 2015-2016 Platina Systems, Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license described in
+# /usr/share/doc/qemu-goes/copyright
+
+pid=$$
+usage="qemu-goes [-n | --dry-run] [-q | --quiet] KERNEL INITRD"
+
+if test "$1" = "-h" -o "$1" = "-help" -o "$1" = "--help"; then
+	echo $usage
+	exit 0
+fi
+if test "$1" = "-n" -o "$1" = "-dry-run" -o "$1" = "--dry-run"; then
+	dryrun=echo
+	shift
+fi
+if test "$1" = "-q" -o "$1" = "-quiet" -o "$1" = "--quiet"; then
+	quiet=quiet
+	shift
+fi
+if test $# -ne 2 ; then
+	echo $usage
+	exit 1
+fi
+
+kernel=$1
+initrd=$2
+
+for f in $@; do
+	if test \! -r $f; then
+		echo can\'t read $f >/dev/stderr
+		exit 2
+	fi
+done
+
+case ${initrd##*/} in
+	arm-linux-gnueabi-initrd-*)
+		qemu=qemu-system-arm
+		console=ttyAMA0,115200
+		M=versatilepb 
+		device=e1000,netdev=${USER}-${pid}
+		;;
+	x86_64-linux-gnu-initrd-*)
+		qemu=qemu-system-x86_64
+		console=ttyS0
+		device=virtio-net,netdev=${USER}-${pid}
+		kvm=kvm
+		;;
+	*)	echo $initrd unsupproted >/dev/stderr
+		exit 2
+		;;
+esac
+
+netdev=user,id=${USER}-${pid},\
+hostfwd=tcp:127.0.0.1:6379-:6379,\
+hostfwd=tcp:127.0.0.1:2345-:2345,\
+hostfwd=udp:127.0.0.1:2623-:623,\
+hostfwd=tcp:127.0.0.1:2023-:23 
+append="console=${console}"
+append="${append}${quiet:+ quiet}"
+append="${append}${IP:+ ip=}${IP}"
+append="${append}${GOES:+ goes=}${GOES}"
+append="${append}${GOESRC:+ goesrc=}${GOESRC}"
+append="${append}${ROOT:+ root=/dev/vda}"
+
+eval ${dryrun} ${qemu} ${M:+-M ${M}} ${kvm:+--enable-kvm} \
+	-kernel ${kernel} \
+	-initrd ${initrd} \
+	-no-reboot \
+	--nographic \
+	${ROOT:+-drive file=${ROOT},if=virtio,index=0,media=disk} \
+	-netdev ${netdev} \
+	-device ${device} \
+	-append ${dryrun:+\\\"}\"${append}\"${dryrun:+\\\"}

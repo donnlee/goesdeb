@@ -1,0 +1,16 @@
+*~
+*.swp
+/*.patch
+/*.deb
+/goesd-*
+/*initrd*
+/DEBIAN
+/debian/files
+/debian/goesd*/
+/debian/goes-initrd-*/
+/debian/qemu-goes/
+/debian/*.*.debhelper
+/debian/*.debhelper.log
+/debian/*.substvars
+!/debian/*.links
+!/debian/*.manpages
