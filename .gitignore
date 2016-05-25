@@ -1,9 +1,8 @@
 *~
 *.swp
 /*.patch
-/*.deb
-/goesd-*
-/*initrd*
+/bin
+/goes-initrd
 /DEBIAN
 /debian/files
 /debian/goesd*/

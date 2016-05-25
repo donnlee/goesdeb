@@ -20,8 +20,10 @@ else
   echo := @:
 endif
 
-cpio := cpio --quiet -H newc -o --owner 0:0
 STRIP ?= strip
+
+goes_static = $(addprefix goes-,$(addsuffix -static,$(notdir $@)))
+initrd_build = $(subst .cpio.xz,-build,$@)
 
 goBuild := go build$(if $(GOTAGS), -tags )$(GOTAGS)
 goLdflags := -linkmode external$(if $(GOLDFLAGS), )$(GOLDFLAGS)
@@ -31,39 +33,40 @@ goStaticBuild := $(goBuild) -ldflags '$(goLdflags)'
 
 define mkimg
 $(Q)$(echo) go build $@
-$(Q)$(goStaticBuild) -o $@-init $(pkg_$(pkg))
-$(Q)install -s --strip-program=$(STRIP) -D $@-init $@-build/init
-$(Q)install -d $@-build/bin
-$(Q)ln -sf ../init $@-build/bin/goes
-$(Q)cd $@-build  && find . | $(cpio) >../$@.cpio
-$(Q)rm -f $@.cpio.xz
-$(Q)xz --check=crc32 -9 $@.cpio
-$(Q)mv $@.cpio.xz $@
-$(Q)rm -rf $@-build
+$(Q)$(goStaticBuild) -o bin/$(goes_static) $(pkg_$(pkg))
+$(Q)install -s --strip-program=$(STRIP) -D bin/$(goes_static)\
+	$(initrd_build)/init
+$(Q)install -d $(initrd_build)/bin
+$(Q)ln -sf ../init $(initrd_build)/bin/goes
+$(Q)cd $(initrd_build)  && find . |\
+	cpio --quiet -H newc -o --owner 0:0 >../$(subst .xz,,$(notdir $@))
+$(Q)rm -f $@
+$(Q)xz --check=crc32 -9 $(subst .xz,,$@)
+$(Q)rm -rf $(initrd_build)
 endef
 
-goesd-%:
+bin/goesd-%:
 	$(Q)$(echo) go build $@
 	$(Q)$(goBuild) -o $@ $(pkg_$(*))
 
-arm-linux-gnueabi-initrd-%: export GOARCH=arm
-arm-linux-gnueabi-initrd-%: export CGO_ENABLED=1
-arm-linux-gnueabi-initrd-%: export CC=arm-linux-gnueabi-gcc
-arm-linux-gnueabi-initrd-%: export LD=arm-linux-gnueabi-ld
-arm-linux-gnueabi-initrd-%: export STRIP=arm-linux-gnueabi-strip
-arm-linux-gnueabi-initrd-%: pkg=$*
+goes-initrd/%-arm-linux-gnueabi.cpio.xz: export GOARCH=arm
+goes-initrd/%-arm-linux-gnueabi.cpio.xz: export CGO_ENABLED=1
+goes-initrd/%-arm-linux-gnueabi.cpio.xz: export CC=arm-linux-gnueabi-gcc
+goes-initrd/%-arm-linux-gnueabi.cpio.xz: export LD=arm-linux-gnueabi-ld
+goes-initrd/%-arm-linux-gnueabi.cpio.xz: export STRIP=arm-linux-gnueabi-strip
+goes-initrd/%-arm-linux-gnueabi.cpio.xz: pkg=$*
 
-arm-linux-gnueabi-initrd-%:
+goes-initrd/%-arm-linux-gnueabi.cpio.xz:
 	$(call mkimg)
 
-x86_64-linux-gnu-initrd-%: pkg=$*
+goes-initrd/%-amd64-linux-gnu.cpio.xz: pkg=$*
 
-x86_64-linux-gnu-initrd-%:
+goes-initrd/%-amd64-linux-gnu.cpio.xz:
 	$(call mkimg)
 
-all := goesd-example
-all += x86_64-linux-gnu-initrd-example
-all += arm-linux-gnueabi-initrd-example
+all := bin/goesd-example
+all += goes-initrd/example-amd64-linux-gnu.cpio.xz
+all += goes-initrd/example-arm-linux-gnueabi.cpio.xz
 
 .PHONY: all
 all : $(all)

@@ -1,1 +1,1 @@
-x86_64-linux-gnu-initrd-example usr/share/goes
+goes-initrd/example-amd64-linux-gnu.cpio.xz usr/share/goes-initrd

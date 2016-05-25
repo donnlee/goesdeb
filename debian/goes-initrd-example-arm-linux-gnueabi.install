@@ -1,1 +1,1 @@
-arm-linux-gnueabi-initrd-example usr/share/goes
+goes-initrd/example-arm-linux-gnueabi.cpio.xz usr/share/goes-initrd
