@@ -1,7 +1,7 @@
 Source: goesdeb
-Section: contrib/net
-Priority: extra
 Maintainer: Tom Grennan <tgrennan@platinasystems.com>
+Section: contrib/embedded
+Priority: extra
 Build-Depends: debhelper (>= 9),
                git-buildpackage,
                golang-1.6,
@@ -18,31 +18,43 @@ Vcs-Git: git://github.com/platinasystems/goesdeb
 Vcs-Browser: https://github.com/platinasystems/goesdeb
 
 Package: goesd
-Architecture: any
+Architecture: all
+Section: contrib/embedded
+Priority: extra
+Essential: yes
 Depends: ${misc:Depends}
 Description: GO-Embedded-System
  This contains the common man page and /etc/init.d script.
 
 Package: goesd-example
 Architecture: amd64
+Section: contrib/embedded
+Priority: extra
+Essential: yes
 Depends: ${shlibs:Depends}, ${misc:Depends}, goesd
 Description: GO-Embedded-System
  A sub-system daemon for Debian systems.
 
 Package: goes-initrd-example-amd64-linux-gnu
-Architecture: any
+Architecture: all
+Section: contrib/embedded
+Priority: extra
 Depends: ${misc:Depends}
 Description: GO-Embedded-System
  A standalone system for x86_64 targets.
 
 Package: goes-initrd-example-arm-linux-gnueabi
-Architecture: any
+Architecture: all
+Section: contrib/embedded
+Priority: extra
 Depends: ${misc:Depends}
 Description: GO-Embedded-System
  A standalone system for arm targets.
 
 Package: qemu-goes
-Architecture: any
+Architecture: all
+Section: contrib/embedded
+Priority: extra
 Depends: ${misc:Depends}
 Description: GO-Embedded-System
  A script to QEMU a goes-initrd.
