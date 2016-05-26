@@ -1,6 +1,7 @@
 #!/usr/bin/make -f
 
 example := github.com/platinasystems/goes/example
+bmc := github.com/platinasystems/goes/example/bmc
 
 export GOPATH := ${CURDIR}
 
@@ -71,9 +72,9 @@ goes-initrd/%-arm-linux-gnueabi.cpio.xz: bin/goes-%-arm-linux-gnueabi
 
 all := bin/goesd-example
 all += goes-initrd/example-amd64-linux-gnu.cpio.xz
-all += goes-initrd/example-arm-linux-gnueabi.cpio.xz
+all += goes-initrd/bmc-arm-linux-gnueabi.cpio.xz
 
-bin/goes-example-arm-linux-gnueabi: export GOARM=7
+bin/goes-bmc-arm-linux-gnueabi: export GOARM=7
 
 .PHONY: all
 all : $(all)

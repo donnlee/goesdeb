@@ -41,13 +41,13 @@ Depends: ${misc:Depends}
 Description: GO-Embedded-System
  A standalone system for x86_64 targets.
 
-Package: goes-initrd-example-arm-linux-gnueabi
+Package: goes-initrd-bmc-arm-linux-gnueabi
 Architecture: all
 Section: contrib/embedded
 Priority: extra
 Depends: ${misc:Depends}
 Description: GO-Embedded-System
- A standalone system for arm targets.
+ A standalone system for an ARM Baseboard Management Controller.
 
 Package: qemu-goes
 Architecture: all
