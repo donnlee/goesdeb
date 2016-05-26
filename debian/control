@@ -21,7 +21,6 @@ Package: goesd
 Architecture: all
 Section: contrib/embedded
 Priority: extra
-Essential: yes
 Depends: ${misc:Depends}
 Description: GO-Embedded-System
  This contains the common man page and /etc/init.d script.
@@ -30,7 +29,6 @@ Package: goesd-example
 Architecture: amd64
 Section: contrib/embedded
 Priority: extra
-Essential: yes
 Depends: ${shlibs:Depends}, ${misc:Depends}, goesd
 Description: GO-Embedded-System
  A sub-system daemon for Debian systems.
