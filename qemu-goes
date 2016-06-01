@@ -47,7 +47,7 @@ case ${initrd##*/} in
 		device=virtio-net,netdev=${USER}-${pid}
 		kvm=kvm
 		;;
-	*)	echo $initrd unsupproted >/dev/stderr
+	*)	echo $initrd unsupported >/dev/stderr
 		exit 2
 		;;
 esac
