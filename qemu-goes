@@ -35,13 +35,13 @@ for f in $@; do
 done
 
 case ${initrd##*/} in
-	arm-linux-gnueabi-initrd-*)
+	*-arm-linux-gnueabi.cpio.xz)
 		qemu=qemu-system-arm
 		console=ttyAMA0,115200
 		M=versatilepb 
 		device=e1000,netdev=${USER}-${pid}
 		;;
-	x86_64-linux-gnu-initrd-*)
+	*-amd64-linux-gnu.cpio.xz)
 		qemu=qemu-system-x86_64
 		console=ttyS0
 		device=virtio-net,netdev=${USER}-${pid}
