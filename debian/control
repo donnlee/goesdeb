@@ -33,26 +33,35 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, goesd
 Description: GO-Embedded-System
  A sub-system daemon for Debian systems.
 
-Package: goes-initrd-example-amd64-linux-gnu
+Package: qemu-goes
+Architecture: all
+Section: contrib/embedded
+Priority: extra
+Depends: ${misc:Depends}
+Suggests: qemu-goes-example-amd64 | qemu-goes-example-armhf
+Description: GO-Embedded-System
+ A script to QEMU a goes-initrd.
+
+Package: qemu-goes-example-amd64
 Architecture: all
 Section: contrib/embedded
 Priority: extra
 Depends: ${misc:Depends}
 Description: GO-Embedded-System
- A standalone system for x86_64 targets.
+ A standalone system for qemu evaluation of x86_64 target.
 
-Package: goes-initrd-bmc-arm-linux-gnueabi
+Package: qemu-goes-example-armhf
+Architecture: all
+Section: contrib/embedded
+Priority: extra
+Depends: ${misc:Depends}
+Description: GO-Embedded-System
+ A standalone system for qemu evaluation of arm target.
+
+Package: goes-bmc-armhf
 Architecture: all
 Section: contrib/embedded
 Priority: extra
 Depends: ${misc:Depends}
 Description: GO-Embedded-System
  A standalone system for an ARM Baseboard Management Controller.
-
-Package: qemu-goes
-Architecture: all
-Section: contrib/embedded
-Priority: extra
-Depends: ${misc:Depends}
-Description: GO-Embedded-System
- A script to QEMU a goes-initrd.
