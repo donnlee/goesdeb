@@ -34,11 +34,13 @@ Machines:$(foreach machine,$(machines),
   $(target))
 endef
 
+empty :=
+space := $(empty) $(empty)
 ifeq (,$(or $(DH_VERBOSE),$(V)))
   Q := @
   I := $(Q)echo "   "
 else
-  I := @:
+  I := @:$(space)
 endif
 
 kernelversion := $(shell make -C src/linux -s kernelversion)
