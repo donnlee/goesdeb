@@ -172,11 +172,13 @@ configs = $(foreach machine,$(machines),linux/$(machine)/.config)
 .PHONY: all
 all : $(all); $(if $(dryrun),,@:)
 
+git_clean = git clean $(if $(dryrun),-n,-f) $(if $(Q),-q )-X -d
+
 .PHONY: clean
-clean: ; $(Q)git clean $(if $(Q),-q )-X -d
+clean: ; $(Q)$(git_clean)
 
 .PHONY: clean-debian
-clean-debian: ; $(Q)git clean $(if $(Q),-q )-X -d -- debian/*
+clean-debian: ; $(Q)$(git_clean) -- debian/*
 
 .PHONY: help
 help: ; $(Q):$(info $(help))
