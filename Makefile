@@ -112,15 +112,17 @@ gobuild += $(if $(filter netgo,$(GOTAGS)), -a)
 gobuild += $(if $(GOTAGS), -tags "$(GOTAGS)")
 gobuild += $(if $(goLdFlags), -ldflags '$(goLdFlags)')
 
-goes/%: GOTAGS+=netgo
-goes/%: goLdFlags=-d
 goes/%_amd64: export GOARCH=amd64
+goes/%_amd64: GOTAGS+=netgo
+goes/%_amd64: goLdFlags=-d
+
 goes/%_armhf: export GOARCH=arm
+goes/%_armhf: GOTAGS+=netgo
+goes/%_armhf: goLdFlags=-d
 
-goesd-% goes/%:
-	$(I)go build $@ GOARCH=$$GOARCH
-	$(Q)$(gobuild) -o $@ $($*_main)
-
+goesd-% goes/%_amd64 goes/%_armhf:
+	$(I)env GOARCH=$(GOARCH) go build $(main)
+	$(Q)$(gobuild) -o $@ $(main)
 
 example_main := github.com/platinasystems/goes/example
 all += goesd-example
@@ -134,7 +136,7 @@ all += goesd-example
 machines += example_amd64
 example_amd64_help := suitable for qemu-goes
 example_amd64_ARCH := x86_64
-example_amd64_main := github.com/platinasystems/goes/example
+goes/example_amd64: main=github.com/platinasystems/goes/example
 example_amd64_linux_config := kvmconfig
 all += goes/example_amd64
 all += goes/example_amd64.cpio.xz
@@ -144,7 +146,7 @@ machines += example_armhf
 example_armhf_help := suitable for qemu-goes
 example_armhf_ARCH := arm
 example_armhf_CROSS_COMPILE := arm-linux-gnueabi-
-example_armhf_main := github.com/platinasystems/goes/example
+goes/example_armhf: main=github.com/platinasystems/goes/example
 example_armhf_linux_config := olddefconfig
 all += goes/example_armhf
 all += goes/example_armhf.cpio.xz
@@ -156,7 +158,7 @@ machines += bmc_armhf
 bmc_armhf_help := Platina Systems Baseboard Management Controller
 bmc_armhf_ARCH := arm
 bmc_armhf_CROSS_COMPILE := arm-linux-gnueabi-
-bmc_armhf_main := github.com/platinasystems/goes/example/bmc
+goes/bmc_armhf: main=github.com/platinasystems/goes/example/bmc
 bmc_armhf_linux_config := olddefconfig
 all += goes/bmc_armhf
 all += goes/bmc_armhf.cpio.xz
