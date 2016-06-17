@@ -32,6 +32,11 @@ Machines:$(foreach machine,$(machines),
 
 `all` builds:$(foreach target,$(all),
   $(target))
+
+Flags:
+   V=1	verbose
+   FORCE=FORCE
+	force build of goes targets
 endef
 
 empty :=
@@ -94,38 +99,58 @@ goes/%_armhf.cpio.xz: stripper=arm-linux-gnueabi-strip
 
 initrd_dir = $(subst .cpio.xz,.tmp,$@)
 
+strip_program = $(if $(stripper),--strip-program=$(stripper))
+cpio = cpio --quiet -H newc -o --owner 0:0
+cpiofn = ../$(subst .xz,,$(notdir $@))
+
 goes/%.cpio.xz: goes/%
 	$(I)mk $@
-	$(Q)install -s$(if $(stripper), --strip-program=$(stripper))\
-		-D $?  $(initrd_dir)/init
+	$(Q)install -s $(strip_program) -D $?  $(initrd_dir)/init
 	$(Q)install -d $(initrd_dir)/bin
 	$(Q)ln -sf ../init $(initrd_dir)/bin/goes
-	$(Q)cd $(initrd_dir) && \
-		find . | cpio --quiet -H newc -o --owner 0:0 \
-			>../$(subst .xz,,$(notdir $@))
+	$(Q)cd $(initrd_dir) && find . | $(cpio) >$(cpiofn)
 	$(Q)rm -f $@
 	$(Q)xz --check=crc32 -9 $(subst .xz,,$@)
 	$(Q)rm -rf $(initrd_dir)
 
-gobuild  = go build
-gobuild += $(if $(filter netgo,$(GOTAGS)), -a)
-gobuild += $(if $(GOTAGS), -tags "$(GOTAGS)")
-gobuild += $(if $(goLdFlags), -ldflags '$(goLdFlags)')
+gorebuild_ = $(if $(filter netgo,$(GOTAGS)), -a)
+gotags_ = $(if $(GOTAGS), -tags "$(GOTAGS)")
+goldflags_ = $(if $(goLdFlags), -ldflags '$(goLdFlags)')
 
-goes/%_amd64: export GOARCH=amd64
-goes/%_amd64: GOTAGS+=netgo
-goes/%_amd64: goLdFlags=-d
-
-goes/%_armhf: export GOARCH=arm
-goes/%_armhf: GOTAGS+=netgo
-goes/%_armhf: goLdFlags=-d
-
-goesd-% goes/%_amd64 goes/%_armhf:
-	$(I)env GOARCH=$(GOARCH) go build $(main)
-	$(Q)$(gobuild) -o $@ $(main)
+define gobuild
+$(I)env GOARCH=$(GOARCH) go build -o $@ $(main)
+$(Q)go build $(gorebuild_) $(gotags_) $(goldflags_) -o $@ $(main)
+endef
 
 example_main := github.com/platinasystems/goes/example
+
+goesd-example: export GOARCH=amd64
+goesd-example: main=$(example_main)
+
 all += goesd-example
+
+goes/example_amd64: export GOARCH=amd64
+goes/example_amd64: GOTAGS=netgo
+goes/example_amd64: goLdFlags=-d
+goes/example_amd64: main=$(example_main)
+
+all += goes/example_amd64.cpio.xz
+
+goes/example_armhf: export GOARCH=arm
+goes/example-armhf: export GOARM=7
+goes/example_armhf: GOTAGS+=netgo
+goes/example_armhf: goLdFlags=-d
+goes/example_armhf: main=$(example_main)
+
+all += goes/example_armhf.cpio.xz
+
+goes/bmc_armhf: export GOARCH=arm
+goes/bmc-armhf: export GOARM=7
+goes/bmc_armhf: GOTAGS+=netgo
+goes/bmc_armhf: goLdFlags=-d
+goes/bmc_armhf: main=$(example_main)
+
+all += goes/bmc_armhf.cpio.xz
 
 # Replace all += <MACHINE_DEBARCH>.vmlinuz with these for linux debian
 # packages instead of zImage/bzImage:
@@ -136,41 +161,38 @@ all += goesd-example
 machines += example_amd64
 example_amd64_help := suitable for qemu-goes
 example_amd64_ARCH := x86_64
-goes/example_amd64: main=github.com/platinasystems/goes/example
 example_amd64_linux_config := kvmconfig
-all += goes/example_amd64
-all += goes/example_amd64.cpio.xz
+
 all += goes/example_amd64.vmlinuz
 
 machines += example_armhf
 example_armhf_help := suitable for qemu-goes
 example_armhf_ARCH := arm
 example_armhf_CROSS_COMPILE := arm-linux-gnueabi-
-goes/example_armhf: main=github.com/platinasystems/goes/example
 example_armhf_linux_config := olddefconfig
-all += goes/example_armhf
-all += goes/example_armhf.cpio.xz
+
 all += goes/example_armhf.vmlinuz
 
-goes/example-armhf: export GOARM=7
-
 machines += bmc_armhf
+
 bmc_armhf_help := Platina Systems Baseboard Management Controller
 bmc_armhf_ARCH := arm
 bmc_armhf_CROSS_COMPILE := arm-linux-gnueabi-
 goes/bmc_armhf: main=github.com/platinasystems/goes/example/bmc
 bmc_armhf_linux_config := olddefconfig
-all += goes/bmc_armhf
-all += goes/bmc_armhf.cpio.xz
-all += goes/bmc_armhf.vmlinuz
 
-goes/bmc-armhf: export GOARM=7
+all += goes/bmc_armhf.vmlinuz
 
 configs = $(foreach machine,$(machines),linux/$(machine)/.config)
 .PRECIOUS: $(configs)
 
 .PHONY: all
 all : $(all); $(if $(dryrun),,@:)
+
+goesd-example: $(FORCE); $(gobuild)
+goes/example_amd64: $(FORCE); $(gobuild)
+goes/example_armhf: $(FORCE); $(gobuild)
+goes/bmc_armhf: $(FORCE); $(gobuild)
 
 git_clean = git clean $(if $(dryrun),-n,-f) $(if $(Q),-q )-X -d
 
@@ -185,3 +207,5 @@ help: ; $(Q):$(info $(help))
 
 .PHONY: show-%
 show-%: ; $(Q):$(info $($*))
+
+.PHONY: FORCE
