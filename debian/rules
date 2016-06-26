@@ -6,19 +6,17 @@ ifeq (,$(DH_VERBOSE))
 	Q := @
 endif
 
-variants := example
-
-debian_variants := $(addprefix debian/goesd-,$(variants))
-debian_postinst_variants := $(addsuffix .postinst,$(debian_variants))
-debian_prerm_variants := $(addsuffix .prerm,$(debian_variants))
-
-install: $(debian_postinst_variants) $(debian_prerm_variants)
+goesd_variants := example
 
 %:
 	dh $@ --parallel
 
-debian/goesd-%.postint: debian/goesd-variant.postinst
-	$(Q)sed "s:PKG:goesd-$*:;s:VARIANT:$*:" < $? >$@
-
-debian/goesd-%.prerm: debian/goesd-variant.prerm
-	$(Q)sed "s:PKG:goesd-$*:;s:VARIANT:$*:" < $? >$@
+override_dh_installdeb:
+	$(Q)for x in postinst prerm; do\
+		for variant in $(goesd_variants); do\
+			sed "s:#PACKAGE#:goesd-$${variant}:" \
+			< debian/goesd.$${x}.in\
+			> debian/goesd-$${variant}.$${x}; \
+		done;\
+	done
+	dh_installdeb
