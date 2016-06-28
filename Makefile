@@ -113,24 +113,26 @@ goes/%.cpio.xz: goes/%
 	$(Q)xz --check=crc32 -9 $(subst .xz,,$@)
 	$(Q)rm -rf $(initrd_dir)
 
-gorebuild_ = $(if $(filter netgo,$(GOTAGS)), -a)
-gotags_ = $(if $(GOTAGS), -tags "$(GOTAGS)")
-goldflags_ = $(if $(goLdFlags), -ldflags '$(goLdFlags)')
+GOTAGS_ = $(if $(GOTAGS),$(GOTAGS) )
+gorebuild_ = $(if $(filter netgo,$(gotags)),-a )
+gotags_ = $(if $(gotags),-tags "$(gotags)" )
+goldflags_ = $(if $(goLdFlags),-ldflags '$(goLdFlags)' )
 
 define gobuild
 $(I)env GOARCH=$(GOARCH) go build -o $@ $(main)
-$(Q)go build $(gorebuild_) $(gotags_) $(goldflags_) -o $@ $(main)
+$(Q)go build $(gorebuild_)$(gotags_)$(goldflags_)-o $@ $(main)
 endef
 
 example_main := github.com/platinasystems/goes/example
 
 goesd-example: export GOARCH=amd64
+goesd-example: gotags=$(GOTAGS)
 goesd-example: main=$(example_main)
 
 all += goesd-example
 
 goes/example_amd64: export GOARCH=amd64
-goes/example_amd64: GOTAGS=netgo
+goes/example_amd64: gotags=$(GOTAGS_)netgo
 goes/example_amd64: goLdFlags=-d
 goes/example_amd64: main=$(example_main)
 
@@ -138,7 +140,7 @@ all += goes/example_amd64.cpio.xz
 
 goes/example_armhf: export GOARCH=arm
 goes/example-armhf: export GOARM=7
-goes/example_armhf: GOTAGS+=netgo
+goes/example_armhf: gotags=$(GOTAGS_)netgo
 goes/example_armhf: goLdFlags=-d
 goes/example_armhf: main=$(example_main)
 
@@ -146,7 +148,7 @@ all += goes/example_armhf.cpio.xz
 
 goes/bmc_armhf: export GOARCH=arm
 goes/bmc-armhf: export GOARM=7
-goes/bmc_armhf: GOTAGS+=netgo
+goes/bmc_armhf: gotags=$(GOTAGS_)netgo
 goes/bmc_armhf: goLdFlags=-d
 goes/bmc_armhf: main=$(example_main)
 
