@@ -35,8 +35,8 @@ case ${initrd##*/} in
 	*_armhf.cpio.xz)
 		qemu=qemu-system-arm
 		console=ttyAMA0,115200
-		M=versatilepb 
-		device=e1000,netdev=${USER}-${pid}
+		M=vexpress-a9
+		device=virtio-net-device,netdev=${USER}-${pid}
 		if test "$dtb" = ""; then
 			dtb=${kernel%.*}.dtb
 			if test \! -r $dtb; then
@@ -68,13 +68,15 @@ append="${append}${GOES:+ goes=}${GOES}"
 append="${append}${GOESRC:+ goesrc=}${GOESRC}"
 append="${append}${ROOT:+ root=/dev/vda}"
 
+quote=${dryrun:+\\\"}
+
 eval ${dryrun} ${qemu} ${M:+-M ${M}} ${kvm:+--enable-kvm} \
 	${kernel:+-kernel }${kernel} \
 	${initrd:+-initrd }${initrd} \
 	${dtb:+-dtb }${dtb} \
 	-no-reboot \
-	--nographic \
+	-nographic \
 	${ROOT:+-drive file=${ROOT},if=virtio,index=0,media=disk} \
-	-netdev ${netdev} \
-	-device ${device} \
-	-append ${dryrun:+\\\"}\"${append}\"${dryrun:+\\\"}
+	${netdev:+-netdev ${quote}\"${netdev}\"${quote}} \
+	${device:+-device ${quote}\"${device}\"${quote}} \
+	${append:+-append ${quote}\"${append}\"${quote}}
