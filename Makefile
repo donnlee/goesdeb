@@ -96,9 +96,9 @@ nconfig-% \
 xconfig-% \
 qconfig-%:
 	$(Q)mkdir -p linux/$*
-	$(Q)test -L linux/$*/.config || \
-		ln -s ../../configs/$*.defconfig linux/$*/.config
+	$(Q)cp configs/$*.defconfig linux/$*/.config
 	$(Q)$(mklinux) $(if $(linux_config),$(linux_config),$($*_linux_config))
+	$(Q)cp linux/$*/.config configs/$*.defconfig
 
 goes/%_armhf.cpio.xz: stripper=arm-linux-gnueabi-strip
 
