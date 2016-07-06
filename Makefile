@@ -78,6 +78,11 @@ linux/%/arch/arm/boot/zImage: linux/%/.config
 linux/linux-libc-dev_$(kernelversion)-goes-%.deb: linux/%/.config
 	$(Q)$(mklinux) bindeb-pkg
 
+goes/%.dtb: linux/%/.config
+	$(Q)$(mklinux) dtbs
+	$(Q)mkdir -p goes
+	$(Q)cp linux/$*/arch/arm/boot/dts/$($*_dtb) $@
+
 config-%: linux_config=config
 menuconfig-%: linux_config=menuconfig
 nconfig-%: linux_config=nconfig
@@ -172,8 +177,10 @@ example_armhf_help := suitable for qemu-goes
 example_armhf_ARCH := arm
 example_armhf_CROSS_COMPILE := arm-linux-gnueabi-
 example_armhf_linux_config := olddefconfig
+example_armhf_dtb := vexpress-v2p-ca9.dtb
 
 all += goes/example_armhf.vmlinuz
+all += goes/example_armhf.dtb
 
 machines += bmc_armhf
 
