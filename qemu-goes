@@ -5,7 +5,7 @@
 # /usr/share/doc/qemu-goes/copyright
 
 pid=$$
-usage="qemu-goes [-n | --dry-run] [-q | --quiet] KERNEL INITRD"
+usage="qemu-goes [-n | --dry-run] [-q | --quiet] [KERNEL [INITRD [DTB]]]"
 
 if test "$1" = "-h" -o "$1" = "-help" -o "$1" = "--help"; then
 	echo $usage
@@ -19,13 +19,6 @@ if test "$1" = "-q" -o "$1" = "-quiet" -o "$1" = "--quiet"; then
 	quiet=quiet
 	shift
 fi
-if test $# -ne 2 ; then
-	echo $usage
-	exit 1
-fi
-
-kernel=$1
-initrd=$2
 
 for f in $@; do
 	if test \! -r $f; then
@@ -34,12 +27,23 @@ for f in $@; do
 	fi
 done
 
+kernel=${1:-goes/example_amd64.vmlinuz}
+initrd=${2:-${kernel%.*}.cpio.xz}
+dtb=$3
+
 case ${initrd##*/} in
 	*_armhf.cpio.xz)
 		qemu=qemu-system-arm
 		console=ttyAMA0,115200
 		M=versatilepb 
 		device=e1000,netdev=${USER}-${pid}
+		if test "$dtb" = ""; then
+			dtb=${kernel%.*}.dtb
+			if test \! -r $dtb; then
+				echo can\'t read $dtb >/dev/stderr
+				exit 2
+			fi
+		fi
 		;;
 	*_amd64.cpio.xz)
 		qemu=qemu-system-x86_64
@@ -65,8 +69,9 @@ append="${append}${GOESRC:+ goesrc=}${GOESRC}"
 append="${append}${ROOT:+ root=/dev/vda}"
 
 eval ${dryrun} ${qemu} ${M:+-M ${M}} ${kvm:+--enable-kvm} \
-	-kernel ${kernel} \
-	-initrd ${initrd} \
+	${kernel:+-kernel }${kernel} \
+	${initrd:+-initrd }${initrd} \
+	${dtb:+-dtb }${dtb} \
 	-no-reboot \
 	--nographic \
 	${ROOT:+-drive file=${ROOT},if=virtio,index=0,media=disk} \
