@@ -55,19 +55,10 @@ configured = $(wildcard linux/$*/.config)
 mklinux = $(if $(dryrun),$(if $(configured),+,:),+)$(MAKE) --no-print-directory
 mklinux+=-C $(CURDIR)/src/linux
 mklinux+=$(if $Q,,V=1 )O=$(CURDIR)/linux/$*
-mklinux+=$(if $($*_CROSS_COMPILE),CROSS_COMPILE=$($*_CROSS_COMPILE))
-mklinux+=$(if $($*_ARCH),ARCH=$($*_ARCH))
-mklinux+=$(if $($*_KDEB_PKGVERSION),KDEB_PKGVERSION=$($*_KDEB_PKGVERSION))
-
-goes/%_amd64.vmlinuz: linux/%_amd64/arch/x86_64/boot/bzImage
-	$(Q)mkdir -p goes
-	$(Q)cp $? $@
-	$(Q)chmod -x $@
-
-goes/%_armhf.vmlinuz: linux/%_armhf/arch/arm/boot/zImage
-	$(Q)mkdir -p goes
-	$(Q)cp $? $@
-	$(Q)chmod -x $@
+mklinux+=$(if $($(subst -,_,$*)_CROSS_COMPILE),CROSS_COMPILE=$($(subst -,_,$*)_CROSS_COMPILE))
+mklinux+=$(if $($(subst -,_,$*)_ARCH),ARCH=$($(subst -,_,$*)_ARCH))
+mklinux+=$(if $($(subst -,_,$*)_KDEB_PKGVERSION),KDEB_PKGVERSION=$($(subst -,_,$*)_KDEB_PKGVERSION))
+mklinux+=$(if $($(subst -,_,$*)_KERNELRELEASE),KERNELRELEASE=$($(subst -,_,$*)_KERNELRELEASE))
 
 linux/%/arch/x86_64/boot/bzImage: linux/%/.config
 	$(Q)$(mklinux) bzImage
@@ -75,7 +66,7 @@ linux/%/arch/x86_64/boot/bzImage: linux/%/.config
 linux/%/arch/arm/boot/zImage: linux/%/.config
 	$(Q)$(mklinux) zImage
 
-linux/linux-libc-dev_$(kernelversion)-goes-%.deb: linux/%/.config
+linux/linux-image-%_$(kernelversion)_amd64.deb: linux/%/.config
 	$(Q)$(mklinux) bindeb-pkg
 
 goes/%.dtb: linux/%/.config
@@ -99,8 +90,6 @@ qconfig-%:
 	$(Q)cp configs/$*.defconfig linux/$*/.config
 	$(Q)$(mklinux) $(if $(linux_config),$(linux_config),$($*_linux_config))
 	$(Q)cp linux/$*/.config configs/$*.defconfig
-
-goes/%_armhf.cpio.xz: stripper=arm-linux-gnueabi-strip
 
 initrd_dir = $(subst .cpio.xz,.tmp,$@)
 
@@ -148,22 +137,26 @@ goes/example-armhf: export GOARM=7
 goes/example_armhf: gotags=$(GOTAGS_)netgo
 goes/example_armhf: goLdFlags=-d
 goes/example_armhf: main=$(example_main)
+goes/example_armhf.cpio.xz: stripper=arm-linux-gnueabi-strip
 
 all += goes/example_armhf.cpio.xz
 
-goes/bmc_armhf: export GOARCH=arm
-goes/bmc-armhf: export GOARM=7
-goes/bmc_armhf: gotags=$(GOTAGS_)netgo
-goes/bmc_armhf: goLdFlags=-d
-goes/bmc_armhf: main=$(example_main)
+goes/platina-mk1: export GOARCH=amd64
+goes/platina-mk1: gotags=$(GOTAGS_)netgo
+goes/platina-mk1: goLdFlags=-d
+goes/platina-mk1: main=github.com/platinasystems/goes/platina/mk1
 
-all += goes/bmc_armhf.cpio.xz
+# FIXME uncomment the following when ready
+# all += goes/platina-mk1.cpio.xz
 
-# Replace all += <MACHINE_DEBARCH>.vmlinuz with these for linux debian
-# packages instead of zImage/bzImage:
-#
-# <MACHINE_DEBARCH>_KDEB_PKGVERSION := $(kernelversion)-goes-<MACHINE>
-# all += linux/linux-libc-dev_$(kernelversion)-goes-<MACHINE_DEBARCH>.deb
+goes/platina-mk1-bmc: export GOARCH=arm
+goes/platina-mk1-bmc: export GOARM=7
+goes/platina-mk1-bmc: gotags=$(GOTAGS_)netgo
+goes/platina-mk1-bmc: goLdFlags=-d
+goes/platina-mk1-bmc: main=github.com/platinasystems/goes/platina/mk1/bmc
+goes/platina-mk1-bmc.cpio.xz: stripper=arm-linux-gnueabi-strip
+
+all += goes/platina-mk1-bmc.cpio.xz
 
 machines += example_amd64
 example_amd64_help := suitable for qemu-goes
@@ -182,15 +175,22 @@ example_armhf_dtb := vexpress-v2p-ca9.dtb
 all += goes/example_armhf.vmlinuz
 all += goes/example_armhf.dtb
 
-machines += bmc_armhf
+machines += platina-mk1
+platina_mk1_help := Platina Systems Mark 1 Platform(s)
+platina_mk1_ARCH := x86_64
+platina_mk1_KERNELRELEASE := platina-mk1
+platina_mk1_KDEB_PKGVERSION := $(kernelversion)
+platina_mk1_linux_config := olddefconfig
 
-bmc_armhf_help := Platina Systems Baseboard Management Controller
-bmc_armhf_ARCH := arm
-bmc_armhf_CROSS_COMPILE := arm-linux-gnueabi-
-goes/bmc_armhf: main=github.com/platinasystems/goes/example/bmc
-bmc_armhf_linux_config := olddefconfig
+all += linux/linux-image-platina-mk1_$(kernelversion)_amd64.deb
 
-all += goes/bmc_armhf.vmlinuz
+machines += platina-mk1-bmc
+platina_mk1_bmc_help := Platina Systems Mark 1 Baseboard Management Controller
+platina_mk1_bmc_ARCH := arm
+platina_mk1_bmc_CROSS_COMPILE := arm-linux-gnueabi-
+platina_mk1_bmc_linux_config := olddefconfig
+
+all += goes/platina-mk1-bmc.vmlinuz
 
 configs = $(foreach machine,$(machines),linux/$(machine)/.config)
 .PRECIOUS: $(configs)
@@ -201,7 +201,17 @@ all : $(all); $(if $(dryrun),,@:)
 goesd-example: $(FORCE); $(gobuild)
 goes/example_amd64: $(FORCE); $(gobuild)
 goes/example_armhf: $(FORCE); $(gobuild)
-goes/bmc_armhf: $(FORCE); $(gobuild)
+goes/platina-mk1: $(FORCE); $(gobuild)
+goes/platina-mk1-bmc: $(FORCE); $(gobuild)
+
+goes/example_amd64.vmlinuz: linux/example_amd64/arch/x86_64/boot/bzImage
+	$(Q)install -D $? $@
+
+goes/example_armhf.vmlinuz: linux/example_armhf/arch/arm/boot/zImage
+	$(Q)install -D $? $@
+
+goes/platina-mk1-bmc.vmlinuz: linux/platina-mk1-bmc/arch/arm/boot/zImage
+	$(Q)install -D $? $@
 
 git_clean = git clean $(if $(dryrun),-n,-f) $(if $(Q),-q )-X -d
 
