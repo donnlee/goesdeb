@@ -66,7 +66,7 @@ linux/%/arch/x86_64/boot/bzImage: linux/%/.config
 linux/%/arch/arm/boot/zImage: linux/%/.config
 	$(Q)$(mklinux) zImage
 
-linux/linux-image-%_$(kernelversion)_amd64.deb: linux/%/.config
+linux/linux-image-$(kernelversion)-%_$(kernelversion)_amd64.deb: linux/%/.config
 	$(Q)$(mklinux) bindeb-pkg
 
 goes/%.dtb: linux/%/.config
@@ -178,11 +178,11 @@ all += goes/example_armhf.dtb
 machines += platina-mk1
 platina_mk1_help := Platina Systems Mark 1 Platform(s)
 platina_mk1_ARCH := x86_64
-platina_mk1_KERNELRELEASE := platina-mk1
+platina_mk1_KERNELRELEASE := $(kernelversion)-platina-mk1
 platina_mk1_KDEB_PKGVERSION := $(kernelversion)
 platina_mk1_linux_config := olddefconfig
 
-all += linux/linux-image-platina-mk1_$(kernelversion)_amd64.deb
+all += linux/linux-image-$(kernelversion)-platina-mk1_$(kernelversion)_amd64.deb
 
 machines += platina-mk1-bmc
 platina_mk1_bmc_help := Platina Systems Mark 1 Baseboard Management Controller
