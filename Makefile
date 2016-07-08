@@ -94,7 +94,7 @@ goes/%.dtb: linux/%/.config
 goes/%.u-boot: configs/%.u-boot_defconfig goes/%.cpio.xz
 	$(I)mk $@
 	$(Q)mkdir -p u-boot/$*
-	$(Q)cp $? u-boot/$*/.config
+	$(Q)cp $< u-boot/$*/.config
 	$(Q)$(mkuboot) olddefconfig
 	$(Q)$(mkuboot)
 	$(Q)u-boot/$*/tools/mkimage -A $($(subst -,_,$*)_ARCH) -O linux\
