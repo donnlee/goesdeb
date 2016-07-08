@@ -28,7 +28,7 @@ Configuration targets:
 	menu, ncurses menu, Qt, or GTK+ based programs
 
 Machines:$(foreach machine,$(machines),
-  $(machine)	- $($(machine)_help))
+  $(machine)	- $($(subst -,_,$(machine))_help))
 
 `all` builds:$(foreach target,$(all),
   $(target))
@@ -37,6 +37,14 @@ Flags:
    V=1	verbose
    FORCE=FORCE
 	force build of goes targets
+
+Debug targets:
+  show-VARIABLE
+	print value of $$(VARIABLE)
+
+Phony targets:
+  linux-image-platina-mk1
+	builds $(linux_image_platina_mk1)
 endef
 
 empty :=
@@ -49,6 +57,10 @@ else
 endif
 
 kernelversion := $(shell make -C src/linux -s kernelversion)
+kerneldebver := $(shell git --git-dir src/linux/.git describe --tags --dirty \
+	| sed s:^v::)
+
+linux_image_platina_mk1 = linux/linux-image-$(kernelversion)-platina-mk1_$(kerneldebver)_amd64.deb
 
 configured = $(wildcard linux/$*/.config)
 
@@ -66,7 +78,7 @@ linux/%/arch/x86_64/boot/bzImage: linux/%/.config
 linux/%/arch/arm/boot/zImage: linux/%/.config
 	$(Q)$(mklinux) zImage
 
-linux/linux-image-$(kernelversion)-%_$(kernelversion)_amd64.deb: linux/%/.config
+linux/linux-image-$(kernelversion)-%_$(kerneldebver)_amd64.deb: linux/%/.config
 	$(Q)$(mklinux) bindeb-pkg
 
 goes/%.dtb: linux/%/.config
@@ -179,10 +191,10 @@ machines += platina-mk1
 platina_mk1_help := Platina Systems Mark 1 Platform(s)
 platina_mk1_ARCH := x86_64
 platina_mk1_KERNELRELEASE := $(kernelversion)-platina-mk1
-platina_mk1_KDEB_PKGVERSION := $(kernelversion)
+platina_mk1_KDEB_PKGVERSION := $(kerneldebver)
 platina_mk1_linux_config := olddefconfig
 
-all += linux/linux-image-$(kernelversion)-platina-mk1_$(kernelversion)_amd64.deb
+all += $(linux_image_platina_mk1)
 
 machines += platina-mk1-bmc
 platina_mk1_bmc_help := Platina Systems Mark 1 Baseboard Management Controller
@@ -214,6 +226,9 @@ goes/platina-mk1-bmc.vmlinuz: linux/platina-mk1-bmc/arch/arm/boot/zImage
 	$(Q)install -D $? $@
 
 git_clean = git clean $(if $(dryrun),-n,-f) $(if $(Q),-q )-X -d
+
+.PHONY: linux-image-platina-mk1
+linux-image-platina-mk1: $(linux_image_platina_mk1)
 
 .PHONY: clean
 clean: ; $(Q)$(git_clean)
