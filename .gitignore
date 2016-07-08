@@ -4,7 +4,8 @@
 /goes
 /goesd-*
 /linux
-/debian/
+/u-boot
+/debian
 !/debian/changelog
 !/debian/compat
 !/debian/control

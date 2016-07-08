@@ -72,6 +72,11 @@ mklinux+=$(if $($(subst -,_,$*)_ARCH),ARCH=$($(subst -,_,$*)_ARCH))
 mklinux+=$(if $($(subst -,_,$*)_KDEB_PKGVERSION),KDEB_PKGVERSION=$($(subst -,_,$*)_KDEB_PKGVERSION))
 mklinux+=$(if $($(subst -,_,$*)_KERNELRELEASE),KERNELRELEASE=$($(subst -,_,$*)_KERNELRELEASE))
 
+mkuboot = $(MAKE) --no-print-directory
+mkuboot+= -C src/u-boot
+mkuboot+=$(if $Q,,V=1 )O=$(CURDIR)/u-boot/$*
+mkuboot+=$(if $($(subst -,_,$*)_CROSS_COMPILE),CROSS_COMPILE=$($(subst -,_,$*)_CROSS_COMPILE))
+
 linux/%/arch/x86_64/boot/bzImage: linux/%/.config
 	$(Q)$(mklinux) bzImage
 
@@ -85,6 +90,15 @@ goes/%.dtb: linux/%/.config
 	$(Q)$(mklinux) dtbs
 	$(Q)mkdir -p goes
 	$(Q)cp linux/$*/arch/arm/boot/dts/$($*_dtb) $@
+
+goes/%.u-boot: configs/%.u-boot_defconfig goes/%.cpio.xz
+	$(I)mk $@
+	$(Q)mkdir -p u-boot/$*
+	$(Q)cp $? u-boot/$*/.config
+	$(Q)$(mkuboot) olddefconfig
+	$(Q)$(mkuboot)
+	$(Q)u-boot/$*/tools/mkimage -A $($(subst -,_,$*)_ARCH) -O linux\
+		-T ramdisk -d goes/$*.cpio.xz $@ >/dev/null
 
 config-%: linux_config=config
 menuconfig-%: linux_config=menuconfig
@@ -203,6 +217,7 @@ platina_mk1_bmc_CROSS_COMPILE := arm-linux-gnueabi-
 platina_mk1_bmc_linux_config := olddefconfig
 
 all += goes/platina-mk1-bmc.vmlinuz
+all += goes/platina-mk1-bmc.u-boot
 
 configs = $(foreach machine,$(machines),linux/$(machine)/.config)
 .PRECIOUS: $(configs)
@@ -235,6 +250,9 @@ clean: ; $(Q)$(git_clean)
 
 .PHONY: clean-debian
 clean-debian: ; $(Q)$(git_clean) -- debian/*
+
+.PHONY: clean-u-boot
+clean-u-boot: ; $(Q)$(git_clean) -- u-boot/*
 
 .PHONY: help
 help: ; $(Q):$(info $(help))

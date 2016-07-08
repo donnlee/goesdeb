@@ -43,3 +43,6 @@
 [submodule "src/linux"]
 	path = src/linux
 	url = git@github.com:platinasystems/linux.git
+[submodule "src/u-boot"]
+	path = src/u-boot
+	url = git@github.com:platinasystems/u-boot
