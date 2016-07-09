@@ -1,8 +1,12 @@
 *~
 *.swp
 /*.patch
-/goes
-/goesd-*
+/*.cpio.xz
+/*.cpio.xz.u-boot
+/*.dtb
+/*.u-boot.img
+/*.vmlinuz
+/goes*
 /linux
 /u-boot
 /debian

@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 9),
                binutils,
                gcc (>= 4.9),
                binutils-arm-linux-gnueabi,
-               gcc-arm-linux-gnueabi
+               gcc-arm-none-eabi | gcc-arm-linux-gnueabi
 Standards-Version: 3.9.5
 Vcs-Git: git://github.com/platinasystems/goesdeb
 Vcs-Browser: https://github.com/platinasystems/goesdeb
@@ -32,6 +32,14 @@ Priority: extra
 Depends: ${shlibs:Depends}, ${misc:Depends}, goesd
 Description: GO-Embedded-System
  A sub-system daemon for Debian systems.
+
+Package: goesd-platina-mk1
+Architecture: amd64
+Section: contrib/embedded
+Priority: extra
+Depends: ${shlibs:Depends}, ${misc:Depends}, goesd
+Description: GO-Embedded-System
+ A sub-system daemon for Platina Mark 1.
 
 Package: qemu-goes
 Architecture: all
@@ -57,11 +65,3 @@ Priority: extra
 Depends: ${misc:Depends}
 Description: GO-Embedded-System
  A standalone system for qemu evaluation of arm target.
-
-Package: goes-bmc-armhf
-Architecture: all
-Section: contrib/embedded
-Priority: extra
-Depends: ${misc:Depends}
-Description: GO-Embedded-System
- A standalone system for an ARM Baseboard Management Controller.
