@@ -172,8 +172,7 @@ goes/platina-mk1: gotags=$(GOTAGS_)netgo
 goes/platina-mk1: goLdFlags=-d
 goes/platina-mk1: main=github.com/platinasystems/goes/platina/mk1
 
-# FIXME uncomment the following when ready
-# all += goes/platina-mk1.cpio.xz
+all += goes/platina-mk1.cpio.xz
 
 goes/platina-mk1-bmc: export GOARCH=arm
 goes/platina-mk1-bmc: export GOARM=7
