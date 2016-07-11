@@ -51,7 +51,7 @@ case "$(file ${kernel})" in
 		device=virtio-net,netdev=${USER}-${pid}
 		kvm=kvm
 		;;
-	*)	echo $initrd unsupported >/dev/stderr
+	*)	echo $kernel unsupported >/dev/stderr
 		exit 2
 		;;
 esac

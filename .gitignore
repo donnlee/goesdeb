@@ -6,7 +6,8 @@
 /*.dtb
 /*.u-boot.img
 /*.vmlinuz
-/goes*
+/goes-*
+/goesd-*
 /linux
 /u-boot
 /debian
