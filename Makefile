@@ -170,12 +170,11 @@ platina_mk1_targets+= $(platina_mk1_deb)
 
 all+= $(platina_mk1_targets)
 
-# FIXME reassign dtb=platina-mk1.dtb
 platina_mk1_bmc_help := Platina Systems Mark 1 Baseboard Management Controller
 define platina_mk1_bmc_vars
 $1: arch=arm
 $1: cross_compile=arm-linux-gnueabi-
-$1: dtb=platina-bugatti-mm.dtb
+$1: dtb=platina-mk1-bmc.dtb
 $1: export GOARCH=arm
 $1: export GOARM=7
 $1: linux_config=olddefconfig
