@@ -58,15 +58,7 @@ Debug targets:
 Machines:$(foreach machine,$(machines),
   $(machine)	- $($(subst -,_,$(machine))_help))
 
-U-boot images: (made with sudo and *not* included in "all")
-	platina-mk1-bmc.u-boot.img
 endef
-
-machines = example
-machines+= example-amd64
-machines+= example-armhf
-machines+= platina-mk1
-machines+= platina-mk1-bmc
 
 linux_configs = config
 linux_configs+= menuconfig
@@ -74,159 +66,17 @@ linux_configs+= nconfig
 linux_configs+= xconfig
 linux_configs+= gconfig
 
-example_help:= a daemon suitable for any debian system
-define example_vars
-$1: export GOARCH=amd64
-$1: gotags=$(GOTAGS)
-$1: machine=example
-$1: main=github.com/platinasystems/goes/example
-endef
-
-$(eval $(call example_vars,goesd-example))
-
-example_targets = goesd-example
-
-all+= $(example_targets)
-
-example_amd64_help:= suitable for qemu-goes
-define example_amd64_vars
-$1: arch=x86_64
-$1: export GOARCH=amd64
-$1: linux_config=kvmconfig
-$1: machine=example-amd64
-$1: main=github.com/platinasystems/goes/example
-$1: vmlinuz=linux/example-amd64/arch/x86_64/boot/bzImage
-endef
-
-$(eval $(call example_amd64_vars,example-amd64.cpio.xz))
-$(eval $(call example_amd64_vars,linux/example-amd64/.config))
-$(eval $(call example_amd64_vars,linux/example-amd64/arch/x86_64/boot/bzImage))
-$(eval $(call example_amd64_vars,example-amd64.vmlinuz))
-
-$(foreach c,$(linux_configs),\
-	$(eval $(call example_amd64_vars,$(c)-example-amd64)))
-
-example_amd64_targets = example-amd64.cpio.xz
-example_amd64_targets+= example-amd64.vmlinuz
-
-all+= $(example_amd64_targets)
-
-example_armhf_help:= suitable for qemu-goes
-define example_armhf_vars
-$1: arch=arm
-$1: cross_compile=arm-linux-gnueabi-
-$1: dtb=vexpress-v2p-ca9.dtb
-$1: export GOARCH=arm
-$1: export GOARM=7
-$1: linux_config=olddefconfig
-$1: machine=example-armhf
-$1: main=github.com/platinasystems/goes/example
-$1: stripper=arm-linux-gnueabi-strip
-$1: vmlinuz=linux/example-armhf/arch/arm/boot/zImage
-endef
-
-$(eval $(call example_armhf_vars,example-armhf.cpio.xz))
-$(eval $(call example_armhf_vars,linux/example-armhf/.config))
-$(eval $(call example_armhf_vars,linux/example-armhf/arch/arm/boot/zImage))
-$(eval $(call example_armhf_vars,example-armhf.vmlinuz))
-$(eval $(call example_armhf_vars,example-armhf.dtb))
-
-$(foreach c,$(linux_configs),\
-	$(eval $(call example_armhf_vars,$(c)-example-armhf)))
-
-example_armhf_targets = example-armhf.cpio.xz
-example_armhf_targets+= example-armhf.vmlinuz
-example_armhf_targets+= example-armhf.dtb
-
-all+= $(example_armhf_targets)
-
-platina_mk1_help := Platina Systems Mark 1 Platform(s)
-define platina_mk1_vars
-$1: arch=x86_64
-$1: export GOARCH=amd64
-$1: kernelrelease=$(kernelversion)-platina-mk1
-$1: kdeb_pkgversion=$(kerneldebver)
-$1: linux_config=olddefconfig
-$1: machine=platina-mk1
-$1: main=github.com/platinasystems/goes/platina/mk1
-$1: vmlinuz=linux/platina-mk1/arch/x86_64/boot/bzImage
-endef
-
-platina_mk1_deb = linux/linux-image-$(kernelversion)-platina-mk1_$(kerneldebver)_amd64.deb
-
-$(eval $(call platina_mk1_vars,goesd-platina-mk1))
-$(eval $(call platina_mk1_vars,platina-mk1.cpio.xz))
-$(eval $(call platina_mk1_vars,linux/platina-mk1/.config))
-$(eval $(call platina_mk1_vars,linux/platina-mk1/arch/x86_64/boot/bzImage))
-$(eval $(call platina_mk1_vars,platina-mk1.vmlinuz))
-$(eval $(call platina_mk1_vars,$(platina_mk1_deb)))
-
-$(foreach c,$(linux_configs),\
-	$(eval $(call platina_mk1_vars,$(c)-platina-mk1)))
-
-platina_mk1_targets = goesd-platina-mk1
-platina_mk1_targets+= platina-mk1.cpio.xz
-platina_mk1_targets+= $(platina_mk1_deb)
-
-all+= $(platina_mk1_targets)
-
-platina_mk1_bmc_uboot_env+='fdt_high=0xffffffff'
-platina_mk1_bmc_uboot_env+='bootdelay=1'
-platina_mk1_bmc_uboot_env+='bootargs=console=ttymxc0,115200 quiet root=/dev/mmcblk0p1 rootfstype=ext4 rootwait rw init=/init'
-platina_mk1_bmc_uboot_env+='bootcmd=ext2load mmc 0:1 0x82000000 /boot/zImage; ext2load mmc 0:1 0x88000000 /boot/${boot_dtb}; bootz 0x82000000 - 0x88000000'
-
-platina_mk1_bmc_help := Platina Systems Mark 1 Baseboard Management Controller
-define platina_mk1_bmc_vars
-$1: arch=arm
-$1: cross_compile=arm-linux-gnueabi-
-$1: dtb=platina-mk1-bmc.dtb
-$1: export GOARCH=arm
-$1: export GOARM=7
-$1: linux_config=olddefconfig
-$1: machine=platina-mk1-bmc
-$1: main=github.com/platinasystems/goes/platina/mk1/bmc
-$1: stripper=arm-linux-gnueabi-strip
-$1: vmlinuz=linux/platina-mk1-bmc/arch/arm/boot/zImage
-$1: uboot_env=$(platina_mk1_bmc_uboot_env)
-endef
-
-$(eval $(call platina_mk1_bmc_vars,goes-platina-mk1-bmc))
-$(eval $(call platina_mk1_bmc_vars,linux/platina-mk1-bmc/arch/arm/boot/zImage))
-$(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.vmlinuz))
-$(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.dtb))
-$(eval $(call platina_mk1_bmc_vars,u-boot/platina-mk1-bmc/.config))
-$(eval $(call platina_mk1_bmc_vars,u-boot/platina-mk1-bmc/tools/mkimage))
-$(eval $(call platina_mk1_bmc_vars,u-boot/platina-mk1-bmc/u-boot.imx))
-$(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.u-boot.img))
-
-$(foreach c,$(linux_configs),\
-	$(eval $(call platina_mk1_bmc_vars,$(c)-platina-mk1-bmc)))
-
-platina_mk1_bmc_targets = goes-platina-mk1-bmc
-platina_mk1_bmc_targets+= platina-mk1-bmc.vmlinuz
-platina_mk1_bmc_targets+= platina-mk1-bmc.dtb
-platina_mk1_bmc_targets+= platina-mk1-bmc.u-boot.img
-
-# NOTE don't build platina-mk1-bmc.u-boot.img w/ all b/c it needs sudo
-all+= $(filter-out %.u-boot.img,$(platina_mk1_bmc_targets))
+include machines/*.mk
 
 .PHONY: all
 all : $(all); $(if $(dryrun),,@:)
 
-.PHONY: example
-example: $(example_targets)
+define phony_machine
+.PHONY: $1
+$1: $($(subst -,_,$(1))_targets)
+endef
 
-.PHONY: example-amd64
-example-amd64: $(example_amd64_targets)
-
-.PHONY: example-armhf
-example-armhf: $(example_armhf_targets)
-
-.PHONY: platina-mk1
-platina-mk1: $(platina_mk1_targets)
-
-.PHONY: platina-mk1-bmc
-platina-mk1-bmc: $(platina_mk1_bmc_targets)
+$(foreach machine,$(machines),$(eval $(call phony_machine,$(machine))))
 
 .PHONY: clean
 clean: ; $(Q)$(git_clean)
