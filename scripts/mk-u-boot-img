@@ -1,0 +1,229 @@
+#!/bin/bash
+
+set -eu -x
+
+function show_help {
+    ec=0
+    if [ $# -gt 0 ] ; then
+	    ec=1
+	    exec >/dev/stderr
+	    echo Error: $*
+    fi
+    cat <<-EOF
+usage $0 VAR=VALUE...
+
+VARs [:= DEFAULT | // e.g.]:
+ MACHINE := example-armhf
+ DTB := MACHINE.dtb
+ GOES := goes-MACHINE
+ IMAGE_FILE := MACHINE.u-boot.img
+ IMAGE_SIZE := 32M
+ UBOOT_ENV // "VAR=VAL ..."
+ UBOOT_ENV_OFFSET := 512K
+ UBOOT_ENV_SIZE := 8K
+ UBOOT_IMAGE := u-boot/MACHINE/u-boot.img
+ UBOOT_IMAGE_OFFSET := 1K
+ VERSION := "unknown"
+ VMLINUZ := MACHINE.vmlinuz
+
+EOF
+    exit ${ec}
+}
+
+function die {
+    exec >/dev/stderr
+    echo $*
+    exit 1
+}
+
+UBOOT_ENV=()
+
+# evaluate arguments of the form VAR=VALUE
+for arg ; do
+    case ${arg} in
+    UBOOT_ENV=*)
+	eval ${arg%%=*}=\( "${arg#*=}" \)
+	;;
+    *=*)
+	eval ${arg%=*}=\"${arg#*=}\"
+	;;
+    -h | -help | --help)
+	show_help
+	;;
+    *)
+	show_help \"${arg}\": invalid argument, expect VAR=VALUE
+    esac
+done
+
+: ${MACHINE:=example-armhf}
+: ${DTB:=${MACHINE}.dtb}
+: ${GOES:=goes-${MACHINE}}
+: ${IMAGE_FILE:=${MACHINE}.u-boot.img}
+: ${IMAGE_SIZE:=32M}
+: ${UBOOT_ENV_OFFSET:=512K}
+: ${UBOOT_ENV_SIZE:=1K}
+: ${UBOOT_IMAGE:=u-boot/${MACHINE}/u-boot.imx}
+: ${UBOOT_IMAGE_OFFSET:=1K}
+: ${VMLINUZ:=${MACHINE}.vmlinuz}
+: ${VERSION:=unknown}
+
+for f in ${DTB} ${GOES} ${UBOOT_IMAGE} ${VMLINUZ}
+do
+    test -e ${f} || die \"${f}\": not found
+done
+
+function parse_size {
+    local s=$1
+    if [[ $s =~ ^([0-9]+)$ ]] ; then
+	s=${BASH_REMATCH[1]}
+    elif [[ $s =~ ^([0-9]+)[Gg]$ ]] ; then
+	s=$(( ${BASH_REMATCH[1]} << 30 ))
+    elif [[ $s =~ ^([0-9]+)[Mm]$ ]] ; then
+	s=$(( ${BASH_REMATCH[1]} << 20 ))
+    elif [[ $s =~ ^([0-9]+)[Kk]$ ]] ; then
+	s=$(( ${BASH_REMATCH[1]} << 10 ))
+    else
+	s=-1
+    fi
+    echo $s
+}
+
+type="unknown"
+if [[ ! -e "${IMAGE_FILE}" || -f "${IMAGE_FILE}" ]] ; then
+  type=image_file
+fi
+if [ -b ${IMAGE_FILE} ] ; then
+    if [[ $(mount | grep -c ${IMAGE_FILE}) != 0 ]] ; then
+	die \"${IMAGE_FILE}\": mounted
+    fi
+    type=device
+fi
+if [ "${type}" == "unknown" ] ; then
+    show_help IMAGE_FILE is not a file or device
+fi
+
+if [[ ${IMAGE_SIZE} == 0 && ${type} == "device" ]] ; then
+    IMAGE_SIZE=$(blockdev --getsize64 ${IMAGE_FILE})
+else
+    IMAGE_SIZE=$(parse_size ${IMAGE_SIZE})
+fi
+
+if [[ ${IMAGE_SIZE} -lt 0 ]] ; then
+    die \"${IMAGE_SIZE}\": invalid IMAGE_SIZE
+fi
+
+tmp_dir=$(mktemp -d)
+
+function error_clean_up {
+    rm -rf ${IMAGE_FILE} ${tmp_dir}
+}
+
+trap error_clean_up ERR
+
+image_offset=$((1 << 20))
+partition_size=$((IMAGE_SIZE - image_offset))
+
+function partition_image_file {
+    rm -f ${IMAGE_FILE}
+    fallocate -l ${IMAGE_SIZE} ${IMAGE_FILE}
+    parted --align optimal ${IMAGE_FILE} --script -- mklabel msdos mkpart primary ${image_offset}B ${partition_size}B
+}
+
+function mount_image_file {
+    loop_device=$(losetup --partscan --find --show ${IMAGE_FILE})
+    # first partition
+    mount_device="${loop_device}p1"
+}
+
+function clean_up_image_file {
+    losetup --detach ${loop_device}
+}
+
+function partition_device {
+    dd if=/dev/zero of=${IMAGE_FILE} bs=512 count=1 status=none
+    parted --align optimal ${IMAGE_FILE} --script -- mklabel msdos mkpart primary ${image_offset}B ${partition_size}B
+    # re-read partition table
+    partprobe ${IMAGE_FILE}
+    # sleep or else immediately following mkfs will fail.
+    sleep .1
+}
+
+function mount_device {
+    # first partition
+    mount_device="${IMAGE_FILE}1"
+}
+
+function clean_up_device {
+    eject ${IMAGE_FILE}
+}
+
+function mkfs {
+    mkfs.ext4 -q -F $1 # >& /dev/null
+}
+
+function label_device {
+    e2label ${mount_device} ${VERSION}
+}
+
+function copy_files {
+    mkdir -p ${tmp_dir}/boot ${tmp_dir}/dev
+    if [ ${VMLINUZ} = ${MACHINE}.vmlinuz ] ; then
+	cp ${MACHINE}.vmlinuz ${tmp_dir}/boot/zImage
+    else
+	cp ${VMLINUZ} ${tmp_dir}/boot
+    fi
+    cp ${MACHINE}.dtb ${tmp_dir}/boot
+    cp ${GOES} ${tmp_dir}/init
+    mkdir -p ${tmp_dir}/bin
+    ln -sf ../init ${tmp_dir}/bin/goes
+}
+
+function copy_u_boot {
+    local ofs=$(parse_size ${UBOOT_IMAGE_OFFSET})
+    if [[ ${ofs} -lt 0 ]] ; then
+	die \"${UBOOT_IMAGE_OFFSET}\": invalid UBOOT_IMAGE_OFFSET
+    fi
+    dd if=u-boot/${MACHINE}/u-boot.imx of=${IMAGE_FILE} bs=1k \
+	    seek=$(( ${ofs} / 1024 )) status=none conv=notrunc
+    if [[ ${#UBOOT_ENV[@]} -gt 0 ]] ; then
+	local s=$(parse_size ${UBOOT_ENV_SIZE})
+	if [[ ${s} -lt 0 ]] ; then
+	    die \"${UBOOT_ENV_SIZE}\": invalid UBOOT_ENV_SIZE
+	fi
+	local o=$(parse_size ${UBOOT_ENV_OFFSET})
+	if [[ ${o} -lt 0 ]] ; then
+		die \"${UBOOT_ENV_OFFSET}\": invalid UBOOT_ENV_OFFSET
+	fi
+	local t=$(mktemp)
+	(for (( i = 0; i < ${#UBOOT_ENV[@]}; i++)); do \
+	    echo ${UBOOT_ENV[$i]}; \
+	done) > $t
+	u-boot/${MACHINE}/tools/mkenvimage -p 0 -o - -s ${s} ${t} |
+		dd of=${IMAGE_FILE} bs=1k seek=$(( $o / 1024 )) status=none
+	rm -f ${t}
+    fi
+}
+
+function main {
+    partition_${type}
+
+    mount_${type}
+
+    mkfs ${mount_device}
+
+    mount ${mount_device} ${tmp_dir}
+
+    copy_files
+
+    label_device ${mount_device} ${VERSION}
+
+    umount ${tmp_dir}
+
+    rm -rf ${tmp_dir}
+
+    copy_u_boot
+
+    clean_up_${type}
+}
+
+main

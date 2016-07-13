@@ -170,6 +170,11 @@ platina_mk1_targets+= $(platina_mk1_deb)
 
 all+= $(platina_mk1_targets)
 
+platina_mk1_bmc_uboot_env+='fdt_high=0xffffffff'
+platina_mk1_bmc_uboot_env+='bootdelay=1'
+platina_mk1_bmc_uboot_env+='bootargs=console=ttymxc0,115200 quiet root=/dev/mmcblk0p1 rootfstype=ext4 rootwait rw init=/init'
+platina_mk1_bmc_uboot_env+='bootcmd=ext2load mmc 0:1 0x82000000 /boot/zImage; ext2load mmc 0:1 0x88000000 /boot/${boot_dtb}; bootz 0x82000000 - 0x88000000'
+
 platina_mk1_bmc_help := Platina Systems Mark 1 Baseboard Management Controller
 define platina_mk1_bmc_vars
 $1: arch=arm
@@ -182,10 +187,10 @@ $1: machine=platina-mk1-bmc
 $1: main=github.com/platinasystems/goes/platina/mk1/bmc
 $1: stripper=arm-linux-gnueabi-strip
 $1: vmlinuz=linux/platina-mk1-bmc/arch/arm/boot/zImage
+$1: uboot_env=$(platina_mk1_bmc_uboot_env)
 endef
 
-$(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.cpio.xz))
-$(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.cpio.xz.u-boot))
+$(eval $(call platina_mk1_bmc_vars,goes-platina-mk1-bmc))
 $(eval $(call platina_mk1_bmc_vars,linux/platina-mk1-bmc/arch/arm/boot/zImage))
 $(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.vmlinuz))
 $(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.dtb))
@@ -197,7 +202,7 @@ $(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.u-boot.img))
 $(foreach c,$(linux_configs),\
 	$(eval $(call platina_mk1_bmc_vars,$(c)-platina-mk1-bmc)))
 
-platina_mk1_bmc_targets = platina-mk1-bmc.cpio.xz.u-boot
+platina_mk1_bmc_targets = goes-platina-mk1-bmc
 platina_mk1_bmc_targets+= platina-mk1-bmc.vmlinuz
 platina_mk1_bmc_targets+= platina-mk1-bmc.dtb
 platina_mk1_bmc_targets+= platina-mk1-bmc.u-boot.img
@@ -246,8 +251,22 @@ show-%: ; $(Q):$(info $($(subst -,_,$*)))
 xV = $(if $Q,,V=1)
 xARCH = $(if $(arch), ARCH=$(arch))
 xCROSS_COMPILE = $(if $(cross_compile), CROSS_COMPILE=$(cross_compile))
+xDTB = $(if $(dtb), DTB=$(dtb))
+xGOES = $(if $(goes), GOES=$(goes))
+xIMAGE_FILE = $(if $(image_file), IMAGE_FILE-$(image_file))
+xIMAGE_SIZE = $(if $(image_size), IMAGE_SIZE-$(image_size))
 xKDEB_PKGVERSION = $(if $(kdeb_pkgversion), KDEB_PKGVERSION=$(kdeb_pkgversion))
 xKERNELRELEASE = $(if $(kernelrelease), KERNELRELEASE=$(kernelrelease))
+xMACHINE = $(if $(machine), MACHINE=$(machine))
+xUBOOT_ENV= $(if $(uboot_env), UBOOT_ENV="$(uboot_env)")
+xUBOOT_ENV_OFFSET = $(if $(uboot_env_offset),\
+		    UBOOT_ENV_OFFSET=$(uboot_env_offset))
+xUBOOT_ENV_SIZE = $(if $(uboot_env_size), UBOOT_ENV_SIZE=$(uboot_env_size))
+xUBOOT_IMAGE = $(if $(uboot_image), UBOOT_IMAGE=$(uboot_image))
+xUBOOT_IMAGE_OFFSET = $(if $(uboot_image_offset),\
+		      UBOOT_IMAGE_OFFSET=$(uboot_image_offset))
+xVMLINUZ=$(if $(vmlinuz), VMLINUZ=$(vmlinuz))
+xVERSION=$(if $(goesversion), VERSION=$(goesversion))
 
 linux_configured = $(wildcard linux/$(machine)/.config)
 uboot_configured = $(wildcard u-boot/$(machine)/.config)
@@ -317,14 +336,20 @@ mkuboot+= O=$(CURDIR)/u-boot/$(machine)
 mkuboot+= $(xV)$(xARCH)$(xV)$(xCROSS_COMPILE)
 mkuboot_= $(if $(dryrun),$(if $(uboot_configured),+,: ),$(mkinfo)+)
 
-mk_u_boot_img = $(mk_u_boot_img_)sudo scripts/mk-u-boot
-mk_u_boot_img+= DTB=$(machine).dtb
-mk_u_boot_img+= IMAGE_FILE=$@
-mk_u_boot_img+= INITRD=$(machine).cpio.xz.u-boot
-mk_u_boot_img+= UBOOT=u-boot/$(machine)/u-boot.imx
-mk_u_boot_img+= VERSION=$(goesversion)
-mk_u_boot_img+= VMLINUZ=linux/$(machine)/arch/arm/boot/zImage
-mk_u_boot_img_= $(if $(dryrun),: ,$(fixme))
+mk_u_boot_img = $(mk_u_boot_img_)sudo scripts/mk-u-boot-img
+mk_u_boot_img+= $(xMACHINE)
+mk_u_boot_img+= $(xDTB)
+mk_u_boot_img+= $(xGOES)
+mk_u_boot_img+= $(xIMAGE_FILE)
+mk_u_boot_img+= $(xIMAGE_SIZE)
+mk_u_boot_img+= $(xUBOOT_ENV)
+mk_u_boot_img+= $(xUBOOT_ENV_OFFSET)
+mk_u_boot_img+= $(xUBOOT_ENV_SIZE)
+mk_u_boot_img+= $(xUBOOT_IMAGE)
+mk_u_boot_img+= $(xUBOOT_IMAGE_OFFSET)
+mk_u_boot_img+= $(xVERSION)
+mk_u_boot_img+= $(xVMLINUZ)
+mk_u_boot_img_= $(if $(dryrun),: ,$(mkinfo))
 
 u-boot/%/tools/mkimage u-boot/%/u-boot u-boot/%/u-boot.imx: u-boot/%/.config
 	$(mkuboot)
@@ -334,7 +359,7 @@ u-boot/%/.config: configs/%.u-boot_defconfig
 	$(Q)cp $< u-boot/$*/.config
 	$(mkuboot) olddefconfig
 
-%.u-boot.img: %.cpio.xz.u-boot %.vmlinuz %.dtb u-boot/%/u-boot.imx
+%.u-boot.img: goes-% %.vmlinuz %.dtb u-boot/%/u-boot.imx
 	$(mk_u_boot_img)
 
 config-%: linux_config=config
