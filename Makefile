@@ -45,7 +45,7 @@ Configuration targets:
   nconfig-MACHINE
   xconfig-MACHINE
   gconfig-MACHINE
-  	Update the given machine config utilising a line-oriented,
+	Update the given machine config utilising a line-oriented,
 	menu, ncurses menu, Qt, or GTK+ based programs
 
 Flags:
@@ -72,7 +72,7 @@ linux_configs = config
 linux_configs+= menuconfig
 linux_configs+= nconfig
 linux_configs+= xconfig
-linux_configs+= qconfig
+linux_configs+= gconfig
 
 example_help:= a daemon suitable for any debian system
 define example_vars
@@ -311,9 +311,20 @@ uboot_mkimage_= $(if $(dryrun),: ,$(mkinfo))
 %.cpio.xz.u-boot: %.cpio.xz u-boot/%/tools/mkimage
 	$(uboot_mkimage) -d $*.cpio.xz $@ >/dev/null
 
+goes_linux_n_cpus := $(shell grep '^processor' /proc/cpuinfo | wc -l)
+
+# Flags to pass to sub-makes to enable parallel builds
+goes_make_parallel = -j $(shell				\
+	if [ -f /proc/cpuinfo ] ; then			\
+		expr 2 '*' $(goes_linux_n_cpus) ;	\
+	else						\
+		echo 1 ;				\
+	fi)
+
 mklinux = $(mklinux_)$(MAKE)
 mklinux+= --no-print-directory
 mklinux+= -C $(CURDIR)/src/linux
+mklinux+= $(goes_make_parallel)
 mklinux+= O=$(CURDIR)/linux/$(machine)
 mklinux+= $(xV)$(xARCH)$(xCROSS_COMPILE)$(xKDEB_PKGVERSION)$(xKERNELRELEASE)
 mklinux_= $(if $(dryrun),$(if $(linux_configured),+,: ),$(mkinfo)+)
@@ -366,7 +377,7 @@ config-%: linux_config=config
 menuconfig-%: linux_config=menuconfig
 nconfig-%: linux_config=nconfig
 xconfig-%: linux_config=xconfig
-qconfig-%: linux_config=qconfig
+gconfig-%: linux_config=gconfig
 
 linux/%/.config:
 	$(Q)mkdir -p linux/$(machine)
@@ -374,7 +385,7 @@ linux/%/.config:
 	$(mklinux) $(linux_config)
 	$(Q)cp linux/$(machine)/.config configs/$(machine).defconfig
 
-config-% menuconfig-% nconfig-% xconfig-% qconfig-%:
+config-% menuconfig-% nconfig-% xconfig-% gconfig-%:
 	$(Q)mkdir -p linux/$(machine)
 	$(Q)cp configs/$(machine).defconfig linux/$(machine)/.config
 	$(mklinux) $(subst -$*,,$@)
