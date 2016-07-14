@@ -162,7 +162,7 @@ function mkfs {
 }
 
 function label_device {
-    e2label ${mount_device} ${VERSION}
+    e2label ${mount_device} ${VERSION%-g*}
 }
 
 function copy_files {
@@ -198,8 +198,9 @@ function copy_u_boot {
 	(for (( i = 0; i < ${#UBOOT_ENV[@]}; i++)); do \
 	    echo ${UBOOT_ENV[$i]}; \
 	done) > $t
+	os=$(( $o / 1024 ))
 	u-boot/${MACHINE}/tools/mkenvimage -p 0 -o - -s ${s} ${t} |
-		dd of=${IMAGE_FILE} bs=1k seek=$(( $o / 1024 )) status=none
+		dd of=${IMAGE_FILE} bs=1k seek=${os} status=none conv=notrunc
 	rm -f ${t}
     fi
 }
@@ -219,7 +220,7 @@ function main {
 
     umount ${tmp_dir}
 
-    rm -rf ${tmp_dir}
+    rmdir ${tmp_dir}
 
     copy_u_boot
 
