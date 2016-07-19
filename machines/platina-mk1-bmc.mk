@@ -33,6 +33,8 @@ endef
 
 $(eval $(call platina_mk1_bmc_vars,goes-platina-mk1-bmc))
 $(eval $(call platina_mk1_bmc_vars,linux/platina-mk1-bmc/arch/arm/boot/zImage))
+$(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.cpio.xz))
+$(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.cpio.xz.u-boot))
 $(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.vmlinuz))
 $(eval $(call platina_mk1_bmc_vars,platina-mk1-bmc.dtb))
 $(eval $(call platina_mk1_bmc_vars,u-boot/platina-mk1-bmc/.config))
