@@ -52,3 +52,9 @@
 [submodule "src/github.com/platinasystems/vnetdevices"]
 	path = src/github.com/platinasystems/vnetdevices
 	url = git@github.com:platinasystems/vnetdevices
+[submodule "src/github.com/platinasystems/ipmid"]
+	path = src/github.com/platinasystems/ipmid
+	url = git@github.com:platinasystems/ipmid
+[submodule "src/github.com/platinasystems/ipmigod"]
+	path = src/github.com/platinasystems/ipmigod
+	url = git@github.com:platinasystems/ipmigod
