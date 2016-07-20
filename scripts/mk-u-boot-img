@@ -61,7 +61,7 @@ done
 : ${IMAGE_FILE:=${MACHINE}.u-boot.img}
 : ${IMAGE_SIZE:=32M}
 : ${UBOOT_ENV_OFFSET:=512K}
-: ${UBOOT_ENV_SIZE:=1K}
+: ${UBOOT_ENV_SIZE:=8K}
 : ${UBOOT_IMAGE:=u-boot/${MACHINE}/u-boot.imx}
 : ${UBOOT_IMAGE_OFFSET:=1K}
 : ${VMLINUZ:=${MACHINE}.vmlinuz}
@@ -200,7 +200,7 @@ function copy_u_boot {
 	done) > $t
 	os=$(( $o / 1024 ))
 	u-boot/${MACHINE}/tools/mkenvimage -p 0 -o - -s ${s} ${t} |
-		dd of=${IMAGE_FILE} bs=1k seek=${os} status=none conv=notrunc
+		dd of=${IMAGE_FILE} bs=1k seek=${os} status=none
 	rm -f ${t}
     fi
 }
