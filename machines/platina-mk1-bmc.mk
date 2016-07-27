@@ -13,7 +13,6 @@ platina_mk1_bmc_targets+= platina-mk1-bmc.u-boot.img
 all+= $(filter-out %.u-boot.img,$(platina_mk1_bmc_targets))
 
 platina_mk1_bmc_uboot_env+='fdt_high=0xffffffff'
-platina_mk1_bmc_uboot_env+='bootdelay=1'
 platina_mk1_bmc_uboot_env+='bootargs=console=ttymxc0,115200 quiet root=/dev/mmcblk0p1 rootfstype=ext4 rootwait rw init=/init'
 platina_mk1_bmc_uboot_env+='bootcmd=ext2load mmc 0:1 0x82000000 /boot/zImage; ext2load mmc 0:1 0x88000000 /boot/platina-mk1-bmc.dtb; bootz 0x82000000 - 0x88000000'
 
