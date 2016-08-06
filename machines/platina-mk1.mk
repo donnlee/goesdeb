@@ -4,7 +4,7 @@ machines+= platina-mk1
 
 platina_mk1_help := Platina Systems Mark 1 Platform(s)
 
-platina_mk1_deb = linux/linux-image-$(kernelversion)-platina-mk1_$(kerneldebver)_amd64.deb
+platina_mk1_deb = linux/linux-image-$(kernelversion)-platina-mk1-amd64_$(kerneldebver)_amd64.deb
 
 platina_mk1_targets = goesd-platina-mk1
 platina_mk1_targets+= platina-mk1.cpio.xz
@@ -15,7 +15,7 @@ all+= $(platina_mk1_targets)
 define platina_mk1_vars
 $1: arch=x86_64
 $1: export GOARCH=amd64
-$1: kernelrelease=$(kernelversion)-platina-mk1
+$1: kernelrelease=$(kernelversion)-platina-mk1-amd64
 $1: kdeb_pkgversion=$(kerneldebver)
 $1: linux_config=olddefconfig
 $1: machine=platina-mk1
