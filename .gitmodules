@@ -58,3 +58,6 @@
 [submodule "src/github.com/platinasystems/ipmigod"]
 	path = src/github.com/platinasystems/ipmigod
 	url = git@github.com:platinasystems/ipmigod
+[submodule "src/github.com/google/gopacket"]
+	path = src/github.com/google/gopacket
+	url = git@github.com:google/gopacket
