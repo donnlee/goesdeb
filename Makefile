@@ -50,6 +50,10 @@ Configuration targets:
 
 Flags:
    V=1	verbose
+   GOTAGS="test"
+	enable test commands
+   GCFLAGS="-N -l"
+	disable optimization and inlines for daemon targets
 
 Debug targets:
   show-VARIABLE
@@ -132,8 +136,10 @@ fixme = : $(info FIXME$(space))
 gobuild = $(gobuild_)go build -o $@
 gobuild_= $(if $(dryrun),: ,$(mkinfo))
 
+gcflags = $(if $(GCFLAGS),-gcflags="$(GCFLAGS)" )
+
 goesd-%:
-	$(gobuild) $(if $(GOTAGS),-tags "$(GOTAGS)" )$(main)
+	$(gobuild) $(gcflags)$(if $(GOTAGS),-tags "$(GOTAGS)" )$(main)
 
 goes-%:
 	$(gobuild) -tags "netgo$(if $(GOTAGS), $(GOTAGS))" -ldflags "-d" $(main)
