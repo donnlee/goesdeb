@@ -61,3 +61,15 @@
 [submodule "src/github.com/google/gopacket"]
 	path = src/github.com/google/gopacket
 	url = git@github.com:google/gopacket
+[submodule "src/github.com/derekparker/delve"]
+	path = src/github.com/derekparker/delve
+	url = git@github.com:derekparker/delve
+[submodule "src/github.com/spf13/cobra"]
+	path = src/github.com/spf13/cobra
+	url = git@github.com:spf13/cobra
+[submodule "src/golang.org/x/debug"]
+	path = src/golang.org/x/debug
+	url = https://go.googlesource.com/debug
+[submodule "src/golang.org/x/sys"]
+	path = src/golang.org/x/sys
+	url = https://go.googlesource.com/sys
