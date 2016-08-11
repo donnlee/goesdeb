@@ -15,6 +15,7 @@ all+= $(platina_mk1_targets)
 define platina_mk1_vars
 $1: arch=x86_64
 $1: export GOARCH=amd64
+$1: GOTAGS+=uio_pci_dma debug
 $1: kernelrelease=$(kernelversion)-platina-mk1-amd64
 $1: kdeb_pkgversion=$(kerneldebver)
 $1: linux_config=olddefconfig
