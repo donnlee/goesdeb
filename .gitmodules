@@ -46,9 +46,6 @@
 [submodule "src/u-boot"]
 	path = src/u-boot
 	url = git@github.com:platinasystems/u-boot
-[submodule "src/github.com/platinasystems/hw"]
-	path = src/github.com/platinasystems/hw
-	url = git@github.com:platinasystems/hw
 [submodule "src/github.com/platinasystems/vnetdevices"]
 	path = src/github.com/platinasystems/vnetdevices
 	url = git@github.com:platinasystems/vnetdevices
