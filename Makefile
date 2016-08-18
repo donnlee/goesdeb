@@ -1,5 +1,6 @@
 #!/usr/bin/make -f
 
+GO ?= go
 empty :=
 space := $(empty) $(empty)
 indent := $(empty)   $(empty)
@@ -12,7 +13,7 @@ endif
 
 export GOPATH := ${CURDIR}
 
-ifeq (,$(shell go version 2>/dev/null))
+ifeq (,$(shell $(GO) version 2>/dev/null))
   ifneq (,$(wildcard /usr/lib/go-1.6))
     export GOROOT := /usr/lib/go-1.6
     export PATH := ${GOROOT}/bin:${PATH}
@@ -54,6 +55,8 @@ Flags:
 	enable test commands
    GCFLAGS="-N -l"
 	disable optimization and inlines for daemon targets
+   GO=$(GO)
+	override go program
 
 Debug targets:
   show-VARIABLE
@@ -133,7 +136,7 @@ git_clean = git clean $(if $(dryrun),-n,-f) $(if $(Q),-q )-X -d
 mkinfo = $(Q)$(info $(indent)mk $@)
 fixme = : $(info FIXME$(space))
 
-gobuild = $(gobuild_)go build -o $@
+gobuild = $(gobuild_)$(GO) build -o $@
 gobuild_= $(if $(dryrun),: ,$(mkinfo))
 
 gcflags = $(if $(GCFLAGS),-gcflags="$(GCFLAGS)" )
