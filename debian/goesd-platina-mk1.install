@@ -1,2 +1,4 @@
 goesd-platina-mk1 usr/sbin
 goesd-platina-mk1-sysctl.conf etc/sysctl.d/66-goesd.conf
+goesd-platina-mk1-modules.conf etc/modules-load.d/goesd-mk1-modules.conf
+goesd-platina-mk1-modprobe.conf etc/modprobe.d/goesd-mk1-options.conf
