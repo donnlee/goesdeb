@@ -1,0 +1,62 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2016 Platina Systems, Inc.
+.\"
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH GOES 1 2016-05-18
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.\"
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics,
+.\" respectively.
+.SH NAME
+goes \- GO-Embedded-System
+.SH SYNOPSIS
+.B /usr/bin/goes
+.RI [ COMMAND ] [ ARGS ] ...
+.br
+.B /usr/sbin/goesd
+.RI [ stop ]
+.SH DESCRIPTION
+.I /usr/bin/goes
+is a multi-feature application intended to provide most and perhaps all
+functions of an embedded system outside of the kernel. When run without
+command arguments it's a CLI on the active TTY; otherwise, it runs the
+given embedded command. For example,
+.nf
+	$ goes
+	goes# echo hello world
+	hello world
+	goes# exit
+	$ goes echo hello world
+	hello world
+	$
+.fi
+.TP
+.I goesd
+is sym-linked with
+.I /usr/bin/goes
+so that it's ARG[0] when run by
+.I /etc/init.d/goesd
+Without args,
+.I goesd
+starts a redis server listening to
+.I /run/goes/socks/redisd
+before running each of the command daemons packaged within it.
+With the
+.B stop
+argument, it kills all of its currently running daemons.
+.SH SEE ALSO
+.BR http://godoc.org/github.com/platinasystems/goes
