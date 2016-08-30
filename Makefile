@@ -11,8 +11,6 @@ else
   I := @:$(space)
 endif
 
-export GOPATH := ${CURDIR}
-
 ifeq (,$(shell $(GO) version 2>/dev/null))
   ifneq (,$(wildcard /usr/lib/go-1.6))
     export GOROOT := /usr/lib/go-1.6
@@ -24,8 +22,8 @@ endif
 
 dryrun := $(filter n,$(MAKEFLAGS))
 
-goesversion := $(shell git --git-dir src/github.com/platinasystems/goes/.git \
-	describe --tags)
+gitdescribe := $(shell git describe --tags 2>/dev/null)
+gitref := $(shell git rev-parse --short HEAD)
 kernelversion := $(shell make -C src/linux -s kernelversion)
 kerneldebver := $(shell git --git-dir src/linux/.git describe --tags \
 	| sed s:^v::)
@@ -123,7 +121,7 @@ xUBOOT_IMAGE = $(if $(uboot_image), UBOOT_IMAGE=$(uboot_image))
 xUBOOT_IMAGE_OFFSET = $(if $(uboot_image_offset),\
 		      UBOOT_IMAGE_OFFSET=$(uboot_image_offset))
 xVMLINUZ=$(if $(vmlinuz), VMLINUZ=$(vmlinuz))
-xVERSION=$(if $(goesversion), VERSION=$(goesversion))
+xVERSION= $(if $(gitdescribe),$(gitdescribe),$(gitref))
 
 linux_configured = $(wildcard linux/$(machine)/.config)
 uboot_configured = $(wildcard u-boot/$(machine)/.config)

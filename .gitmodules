@@ -1,6 +1,3 @@
-[submodule "src/github.com/platinasystems/goes"]
-	path = src/github.com/platinasystems/goes
-	url = git@github.com:platinasystems/goes
 [submodule "src/github.com/platinasystems/netlink"]
 	path = src/github.com/platinasystems/netlink
 	url = git@github.com:platinasystems/netlink
