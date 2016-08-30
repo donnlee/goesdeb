@@ -18,7 +18,7 @@ $1: export GOARCH=arm
 $1: export GOARM=7
 $1: linux_config=olddefconfig
 $1: machine=example-armhf
-$1: main=github.com/platinasystems/goes/example
+$1: main=github.com/platinasystems/goes/main/goes-example
 $1: stripper=arm-linux-gnueabi-strip
 $1: vmlinuz=linux/example-armhf/arch/arm/boot/zImage
 endef

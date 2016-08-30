@@ -14,7 +14,7 @@ $1: arch=x86_64
 $1: export GOARCH=amd64
 $1: linux_config=kvmconfig
 $1: machine=example-amd64
-$1: main=github.com/platinasystems/goes/example
+$1: main=github.com/platinasystems/goes/main/goes-example
 $1: vmlinuz=linux/example-amd64/arch/x86_64/boot/bzImage
 endef
 

@@ -20,7 +20,7 @@ $1: kernelrelease=$(kernelversion)-platina-mk1-amd64
 $1: kdeb_pkgversion=$(kerneldebver)
 $1: linux_config=olddefconfig
 $1: machine=platina-mk1
-$1: main=github.com/platinasystems/goes/platina/mk1
+$1: main=github.com/platinasystems/goes/main/goes-platina-mk1
 $1: vmlinuz=linux/platina-mk1/arch/x86_64/boot/bzImage
 endef
 
