@@ -12,8 +12,6 @@
 /u-boot
 /debian/*.debhelper
 /debian/*.log
-/debian/*.postinst
-/debian/*.prerm
 /debian/*.substvars
 /debian/files
 /debian/goesd/

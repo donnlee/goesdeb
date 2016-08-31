@@ -6,17 +6,5 @@ ifeq (,$(DH_VERBOSE))
 	Q := @
 endif
 
-goesd_variants := example platina-mk1
-
 %:
 	dh $@ --parallel
-
-override_dh_installdeb:
-	$(Q)for x in postinst prerm; do\
-		for variant in $(goesd_variants); do\
-			sed "s:#PACKAGE#:goesd-$${variant}:" \
-			< debian/goesd.$${x}.in\
-			> debian/goesd-$${variant}.$${x}; \
-		done;\
-	done
-	dh_installdeb

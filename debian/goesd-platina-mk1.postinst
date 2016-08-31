@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for #PACKAGE#
+# postinst script for goesd-platina-mk1
 #
 # see: dh_installdeb(1)
 
@@ -17,7 +17,7 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-package=#PACKAGE#
+package=goesd-platina-mk1
 variant=${package#goesd-}
 
 priority=10
