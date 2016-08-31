@@ -6,7 +6,7 @@ ifeq (,$(DH_VERBOSE))
 	Q := @
 endif
 
-goesd_variants := example
+goesd_variants := example platina-mk1
 
 %:
 	dh $@ --parallel
