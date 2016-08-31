@@ -5,6 +5,7 @@ machines+= platina-mk1-bmc
 platina_mk1_bmc_help := Platina Systems Mark 1 Baseboard Management Controller
 
 platina_mk1_bmc_targets = goes-platina-mk1-bmc
+platina_mk1_bmc_targets+= platina-mk1-bmc.cpio.xz
 platina_mk1_bmc_targets+= platina-mk1-bmc.vmlinuz
 platina_mk1_bmc_targets+= platina-mk1-bmc.dtb
 platina_mk1_bmc_targets+= platina-mk1-bmc.u-boot.img
