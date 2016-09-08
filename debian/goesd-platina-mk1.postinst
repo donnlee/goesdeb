@@ -27,6 +27,19 @@ fi
 
 case "$1" in
 configure)
+	if [ ! -d /sys/module/i2c_i801 ] ||
+	   [ ! -e /sys/module/i2c_i801/parameters/disable_features ]; then
+		# load i2c_i801 with polling disabled
+		sudo modprobe i2c_i801 disable_features=0x10
+	else
+		# verify i2c_i801 is loaded with polling enabled
+		value=$(cat /sys/module/i2c_i801/parameters/disable_features)
+		if [ $value -lt 16 ]; then
+			# nope, so unload, then load with polling enabled
+			sudo modprobe -r i2c_i801
+			sudo modprobe i2c_i801 disable_features=0x10
+		fi
+	fi
 	if [ ! -r /var/lib/dpkg/alternatives/${package} ]; then
 		update-alternatives --install /usr/sbin/goesd goesd \
 			/usr/sbin/$package $priority
