@@ -28,11 +28,11 @@ Baseboard Management Controller.
 Run this to build the source and all binary packages,
 
 ```console
-$ git-buildpackage -uc -us
+$ debuild -e GOPATH -uc -us
 ```
 
 or skip the source package,
 
 ```console
-$ git-buildpackage -b -uc -us
+$ debuild -e GOPATH -b -uc -us
 ```
