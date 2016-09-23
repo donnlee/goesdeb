@@ -222,10 +222,9 @@ mk_u_boot_img_= $(if $(dryrun),: ,$(mkinfo))
 u-boot/%/tools/mkimage u-boot/%/u-boot u-boot/%/u-boot.imx: u-boot/%/.config
 	$(mkuboot)
 
-u-boot/%/.config: configs/%.u-boot_defconfig
+u-boot/%/.config:
 	$(Q)mkdir -p u-boot/$*
-	$(Q)cp $< u-boot/$*/.config
-	$(mkuboot) olddefconfig
+	$(mkuboot) $(uboot_defconfig)
 
 %.u-boot.img: goes-% %.vmlinuz %.dtb u-boot/%/u-boot.imx
 	$(mk_u_boot_img)

@@ -30,6 +30,7 @@ $1: main=github.com/platinasystems/goes/main/goes-platina-mk1-bmc
 $1: stripper=arm-linux-gnueabi-strip
 $1: vmlinuz=linux/platina-mk1-bmc/arch/arm/boot/zImage
 $1: uboot_env=$(platina_mk1_bmc_uboot_env)
+$1: uboot_defconfig=platinamx6boards_sd_defconfig
 endef
 
 $(eval $(call platina_mk1_bmc_vars,goes-platina-mk1-bmc))
