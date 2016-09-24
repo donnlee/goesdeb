@@ -121,7 +121,7 @@ xUBOOT_IMAGE = $(if $(uboot_image), UBOOT_IMAGE=$(uboot_image))
 xUBOOT_IMAGE_OFFSET = $(if $(uboot_image_offset),\
 		      UBOOT_IMAGE_OFFSET=$(uboot_image_offset))
 xVMLINUZ=$(if $(vmlinuz), VMLINUZ=$(vmlinuz))
-xVERSION= $(if $(gitdescribe),$(gitdescribe),$(gitref))
+xVERSION=$(if $(gitdescribe), VERSION=$(gitdescribe), VERSION=$(gitref))
 
 linux_configured = $(wildcard linux/$(machine)/.config)
 uboot_configured = $(wildcard u-boot/$(machine)/.config)
