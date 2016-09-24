@@ -122,10 +122,11 @@ trap error_clean_up ERR
 
 image_offset=$((1 << 20))
 partition_size=$((IMAGE_SIZE - image_offset))
+image_k=$((IMAGE_SIZE / 1024))
 
 function partition_image_file {
     rm -f ${IMAGE_FILE}
-    fallocate -l ${IMAGE_SIZE} ${IMAGE_FILE}
+    fallocate -l ${IMAGE_SIZE} ${IMAGE_FILE} || dd if=/dev/zero of=${IMAGE_FILE} bs=1024 count=${image_k}
     parted --align optimal ${IMAGE_FILE} --script -- mklabel msdos mkpart primary ${image_offset}B ${partition_size}B
 }
 
