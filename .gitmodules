@@ -67,3 +67,7 @@
 [submodule "src/golang.org/x/sys"]
 	path = src/golang.org/x/sys
 	url = https://go.googlesource.com/sys
+[submodule "src/coreboot"]
+	path = src/coreboot
+	url = git@github.com:platinasystems/coreboot.git
+
