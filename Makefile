@@ -125,6 +125,7 @@ xVERSION=$(if $(gitdescribe), VERSION=$(gitdescribe), VERSION=$(gitref))
 
 linux_configured = $(wildcard linux/$(machine)/.config)
 uboot_configured = $(wildcard u-boot/$(machine)/.config)
+coreboot_configured = $(wildcard coreboot/$(machine)/.config)
 
 linux_defconfigs := $(wildcard configs/*.defconfig)
 uboot_defconfigs := $(wildcard configs/*.u-boot_defconfig)
@@ -228,6 +229,21 @@ u-boot/%/.config:
 
 %.u-boot.img: goes-% %.vmlinuz %.dtb u-boot/%/u-boot.imx
 	$(mk_u_boot_img)
+
+mkcoreboot = $(mkcoreboot_)$(MAKE)
+mkcoreboot+= --no-print-directory
+mkcoreboot+= -C src/coreboot
+mkcoreboot+= O=$(CURDIR)/coreboot/$(machine)
+mkcoreboot_= $(if $(dryrun),$(if $(coreboot_configured),+,: ),$(mkinfo)+)
+
+coreboot/%/.config:
+	$(Q)mkdir -p coreboot/$*
+	$(mkcoreboot) $(coreboot_crossgcc)
+	$(mkcoreboot) $(coreboot_defconfig)
+
+coreboot-%.rom: coreboot/%/.config %.vmlinuz %.cpio.xz
+	$(mkcoreboot)
+	$(Q)cp coreboot/$*/coreboot.rom $@
 
 config-%: linux_config=config
 menuconfig-%: linux_config=menuconfig

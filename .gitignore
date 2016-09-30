@@ -10,6 +10,8 @@
 /goesd-*
 /linux
 /u-boot
+/coreboot
+/coreboot-*.rom
 /debian/*.debhelper
 /debian/*.log
 /debian/*.substvars
