@@ -27,6 +27,11 @@ for f in $@; do
 	fi
 done
 
+if [ -n "$ROOT" -a -n "$DISK" ]; then
+    echo "Specify either ROOT or DISK, but not both"
+    exit 1
+fi
+
 if [ -n $BIOS ]; then
     kernel=${1:-example-amd64.vmlinuz}
     initrd=${2:-${kernel%.*}.cpio.xz}
@@ -82,6 +87,7 @@ eval ${dryrun} ${qemu} ${M:+-M ${M}} ${kvm:+--enable-kvm} \
 	-no-reboot \
 	-nographic \
 	${ROOT:+-drive file=${ROOT},if=virtio,index=0,media=disk} \
+	${DISK:+-drive file=${DISK},if=virtio,index=0,media=disk,format=raw} \
 	${netdev:+-netdev ${quote}\"${netdev}\"${quote}} \
 	${device:+-device ${quote}\"${device}\"${quote}} \
 	${kernel:+${append:+-append ${quote}\"${append}\"${quote}}}
