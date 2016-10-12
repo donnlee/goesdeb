@@ -32,15 +32,17 @@ if [ -n "$ROOT" -a -n "$DISK" ]; then
     exit 1
 fi
 
-if [ -n $BIOS ]; then
+if [ -z "$BIOS" ]; then
     kernel=${1:-example-amd64.vmlinuz}
     initrd=${2:-${kernel%.*}.cpio.xz}
     dtb=$3
+    arch=$(file ${kernel})
 else
     bios=${BIOS}
+    arch=x86
 fi
 
-case "$(file ${kernel})" in
+case "$arch" in
 	*ARM*)
 		qemu=qemu-system-arm
 		console=ttyAMA0,115200
